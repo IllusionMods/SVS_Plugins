@@ -25,9 +25,9 @@ namespace SVS_NPCSubtitles
     [BepInPlugin(GUID, DisplayName, Version)]
     public class NPCSubtitles : BasePlugin
     {
-        public const string DisplayName = "SVS_NPCSubtitles";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "DS27.SVS.NPCSubtitles";
-        public const string Version = "0.7.2";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

@@ -9,15 +9,16 @@ using SV.Chara;
 using SV.Config;
 using System.IO;
 using Manager;
+using SVS_PersonalityLoader;
 
 namespace PersonalityLoader
 {
     [BepInPlugin(GUID, DisplayName, Version)]
     public class PersonalityLoaderPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_PersonalityLoader";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_PersonalityLoader";
-        public const string Version = "0.6.2";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

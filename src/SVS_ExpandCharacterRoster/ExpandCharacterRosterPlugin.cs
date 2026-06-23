@@ -19,9 +19,9 @@ namespace SVS_ExpandCharacterRoster
     [BepInPlugin(GUID, DisplayName, Version)]
     public class ExpandCharacterRosterPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_ExpandCharacterRoster";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "DS27.SVS.ExpandCharacterRoster";
-        public const string Version = "1.1";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

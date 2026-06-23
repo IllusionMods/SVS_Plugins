@@ -1,10 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<!-- This is the master version, only change this one -->
 		<Version>1.0</Version>
-		<!-- Sets the 'Product name' field on the dll file -->
-		<Product>SVS_CustomFortune</Product>
 		<!-- Sets the 'File description' field on the dll file -->
-		<AssemblyTitle>Allow customizing of character fortunes</AssemblyTitle>
+		<AssemblyTitle>Adds new fortunes into the game, with ability to make your own</AssemblyTitle>
 	</PropertyGroup>
 </Project>

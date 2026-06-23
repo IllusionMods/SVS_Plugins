@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<!-- This is the master version, only change this one -->
-		<Version>1.0</Version>
+		<Version>0.6.2</Version>
 		<!-- Sets the 'File description' field on the dll file -->
-		<AssemblyTitle>Characters will start to sweat during H scenes</AssemblyTitle>
+		<AssemblyTitle>Enables custom personalities to work in the game</AssemblyTitle>
 	</PropertyGroup>
 </Project>

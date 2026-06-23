@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- This is the master version, only change this one -->
+		<Version>1.2.2</Version>
+		<!-- Sets the 'File description' field on the dll file -->
+		<AssemblyTitle>Gives you information about events that are happening in the game</AssemblyTitle>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\00_happy.png" />
+		<EmbeddedResource Include="Resources\01_shy.png" />
+		<EmbeddedResource Include="Resources\02_jealous.png" />
+		<EmbeddedResource Include="Resources\03_angry.png" />
+		<EmbeddedResource Include="Resources\04_sad.png" />
+		<EmbeddedResource Include="Resources\05_calm.png" />
+		<EmbeddedResource Include="Resources\06_horny.png" />
+		<EmbeddedResource Include="Resources\07_serious.png" />
+		<EmbeddedResource Include="Resources\08_tension.png" />
+		<EmbeddedResource Include="Resources\09_normal.png" />
+		<EmbeddedResource Include="Resources\_unknown.png" />
+	</ItemGroup>
+</Project>

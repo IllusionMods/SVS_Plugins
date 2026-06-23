@@ -3,6 +3,10 @@
 		<!-- This is the master version, only change this one -->
 		<Version>1.0</Version>
 		<!-- Sets the 'File description' field on the dll file -->
-		<AssemblyTitle>Characters will start to sweat during H scenes</AssemblyTitle>
+		<AssemblyTitle>Loads Custom Maps and Custom Jobs into the game</AssemblyTitle>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\workIcon_Error.png" />
+	</ItemGroup>
 </Project>

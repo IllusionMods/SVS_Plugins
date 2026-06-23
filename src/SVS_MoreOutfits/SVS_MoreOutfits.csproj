@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- This is the master version, only change this one -->
+		<Version>1.2</Version>
+		<!-- Sets the 'File description' field on the dll file -->
+		<AssemblyTitle>Adds 4 new outfit slots with custom conditions for NPCs to use them</AssemblyTitle>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\00_Unused_default.png" />
+		<EmbeddedResource Include="Resources\00_Unused_hovered.png" />
+		<EmbeddedResource Include="Resources\00_Unused_selected.png" />
+		<EmbeddedResource Include="Resources\01_Weekend_default.png" />
+		<EmbeddedResource Include="Resources\01_Weekend_hovered.png" />
+		<EmbeddedResource Include="Resources\01_Weekend_selected.png" />
+		<EmbeddedResource Include="Resources\02_Night_default.png" />
+		<EmbeddedResource Include="Resources\02_Night_hovered.png" />
+		<EmbeddedResource Include="Resources\02_Night_selected.png" />
+		<EmbeddedResource Include="Resources\03_Lewd_default.png" />
+		<EmbeddedResource Include="Resources\03_Lewd_hovered.png" />
+		<EmbeddedResource Include="Resources\03_Lewd_selected.png" />
+		<EmbeddedResource Include="Resources\04_Costume_default.png" />
+		<EmbeddedResource Include="Resources\04_Costume_hovered.png" />
+		<EmbeddedResource Include="Resources\04_Costume_selected.png" />
+		<EmbeddedResource Include="Resources\05_Sports_default.png" />
+		<EmbeddedResource Include="Resources\05_Sports_hovered.png" />
+		<EmbeddedResource Include="Resources\05_Sports_selected.png" />
+		<EmbeddedResource Include="Resources\06_Bath_default.png" />
+		<EmbeddedResource Include="Resources\06_Bath_hovered.png" />
+		<EmbeddedResource Include="Resources\06_Bath_selected.png" />
+		<EmbeddedResource Include="Resources\07_Camping_default.png" />
+		<EmbeddedResource Include="Resources\07_Camping_hovered.png" />
+		<EmbeddedResource Include="Resources\07_Camping_selected.png" />
+		<EmbeddedResource Include="Resources\08_Home_default.png" />
+		<EmbeddedResource Include="Resources\08_Home_hovered.png" />
+		<EmbeddedResource Include="Resources\08_Home_selected.png" />
+	</ItemGroup>
+</Project>

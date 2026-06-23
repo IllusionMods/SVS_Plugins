@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<!-- This is the master version, only change this one -->
-		<Version>1.0</Version>
+		<Version>1.7</Version>
 		<!-- Sets the 'File description' field on the dll file -->
-		<AssemblyTitle>Characters will start to sweat during H scenes</AssemblyTitle>
+		<AssemblyTitle>Many customizable game balance adjustments and new features</AssemblyTitle>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\btn_switch.png" />
+	</ItemGroup>
 </Project>

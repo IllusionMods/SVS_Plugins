@@ -18,9 +18,9 @@ namespace SVS_SixthSense
     [BepInPlugin(GUID, DisplayName, Version)]
     public class SixthSensePlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_SixthSense";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_SixthSense";
-        public const string Version = "1.2.2";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

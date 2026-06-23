@@ -2,6 +2,8 @@
 	<PropertyGroup>
 		<!-- Sets the 'Company' field on the dll file -->
 		<Authors>https://github.com/IllusionMods/SVS_Plugins</Authors>
+		<!-- Sets the 'Product name' field on the dll file -->
+		<Product>$(MSBuildProjectName)</Product>
 		<!-- Sets the 'Copyright' field on the dll file -->
 		<Copyright>Copyright GPL-3.0 © 2026</Copyright>
 

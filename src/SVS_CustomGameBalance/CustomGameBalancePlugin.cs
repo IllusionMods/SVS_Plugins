@@ -20,9 +20,9 @@ namespace SVS_CustomGameBalance
     [BepInPlugin(GUID, DisplayName, Version)]
     public class CustomGameBalancePlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_CustomGameBalance";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "DS27.SVS.CustomGameBalance";
-        public const string Version = "1.7.0";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

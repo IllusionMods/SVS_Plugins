@@ -7,15 +7,16 @@ using Character;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using System.Collections.Generic;
 using Manager;
+using SVS_TraitUnlocker;
 
 namespace TraitUnlocker
 {
     [BepInPlugin(GUID, DisplayName, Version)]
     public class TraitUnlockerPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_TraitUnlocker";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_TraitUnlocker";
-        public const string Version = "1.0.2";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

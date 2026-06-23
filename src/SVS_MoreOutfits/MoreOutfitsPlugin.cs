@@ -17,9 +17,9 @@ namespace SVS_MoreOutfits
     [BepInPlugin(GUID, DisplayName, Version)]
     public class MoreOutfitsPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_MoreOutfits";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_MoreOutfits";
-        public const string Version = "1.2.0";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

@@ -11,9 +11,9 @@ namespace SVS_FadeController
     [BepInPlugin(GUID, DisplayName, Version)]
     public class SVS_FadeController : BasePlugin
     {
-        public const string DisplayName = "SVS_FadeController";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_FadeController";
-        public const string Version = "1.0.1";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

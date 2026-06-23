@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- This is the master version, only change this one -->
+		<Version>1.1</Version>
+		<!-- Sets the 'File description' field on the dll file -->
+		<AssemblyTitle>Increases character limit up to 96</AssemblyTitle>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\icon12_hover.png" />
+		<EmbeddedResource Include="Resources\icon12_selected.png" />
+		<EmbeddedResource Include="Resources\iconMax_hover.png" />
+		<EmbeddedResource Include="Resources\iconMax_selected.png" />
+		<EmbeddedResource Include="Resources\RosterBG.png" />
+		<EmbeddedResource Include="Resources\slider_bg.png" />
+		<EmbeddedResource Include="Resources\slider_fill.png" />
+		<EmbeddedResource Include="Resources\slider_handle.png" />
+	</ItemGroup>
+</Project>

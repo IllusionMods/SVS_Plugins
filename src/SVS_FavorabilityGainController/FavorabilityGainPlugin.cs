@@ -15,15 +15,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using SV;
 using Character;
+using SVS_FavorabilityGainController;
 
 namespace FavorabiltyGainController
 {
     [BepInPlugin(GUID, DisplayName, Version)]
     public class FavorabilityGainPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_FavorabilityGainController";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_FavorabilityGainController";
-        public const string Version = "1.3.1";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;
