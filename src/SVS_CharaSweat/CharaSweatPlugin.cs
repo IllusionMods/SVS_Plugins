@@ -13,9 +13,9 @@ namespace SVS_CharaSweat
     [BepInPlugin(GUID, DisplayName, Version)]
     public class CharaSweatPlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_CharaSweat";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "DS27.SVS.CharaSweat";
-        public const string Version = "1.0";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;

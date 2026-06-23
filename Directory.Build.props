@@ -5,7 +5,7 @@
 		<!-- Sets the 'Copyright' field on the dll file -->
 		<Copyright>Copyright GPL-3.0 © 2026</Copyright>
 
-		<RootNamespace>SVS_Plugins</RootNamespace>
+		<RootNamespace>$(MSBuildProjectName)</RootNamespace>
 
 		<OutputPath>..\..\bin\build\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -24,7 +24,6 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
-		<PackageReference Include="BepInEx.Analyzers" Version="1.*" />
 		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.*" />
 	</ItemGroup>
 

@@ -22,9 +22,9 @@ namespace SVS_CustomFortune
     [BepInPlugin(GUID, DisplayName, Version)]
     public class CustomFortunePlugin : BasePlugin
     {
-        public const string DisplayName = "SVS_CustomFortune";
+        public const string DisplayName = Constants.Name;
         public const string GUID = "SVS_CustomFortune";
-        public const string Version = "1.0.0";
+        public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
         private static Harmony patchedHooks;
