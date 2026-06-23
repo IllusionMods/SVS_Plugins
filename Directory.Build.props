@@ -25,6 +25,10 @@
 		<FileAlignment>512</FileAlignment>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<Compile Include="..\ConfigurationManagerAttributes.cs" Visible="False" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
 		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.*" />
 	</ItemGroup>

@@ -5,6 +5,7 @@ VisualStudioVersion = 17.14.37314.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution", "_Solution", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
+		src\ConfigurationManagerAttributes.cs = src\ConfigurationManagerAttributes.cs
 		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 	EndProjectSection
