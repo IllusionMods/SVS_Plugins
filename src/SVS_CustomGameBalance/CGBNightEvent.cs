@@ -15,7 +15,7 @@ namespace SVS_CustomGameBalance
         //private static Dictionary<int, Actor> charaNightPoolDic = new();
         internal static unsafe class NightEventJudgeHook
         {
-            //private static INativeDetour _detour;
+            private static INativeDetour _detour; // Keep alive
             private static JudgeDelegate _orig;
 
             [UnmanagedFunctionPointer(CallingConvention.Winapi)]
@@ -43,8 +43,7 @@ namespace SVS_CustomGameBalance
 
                 CustomGameBalancePlugin.Log.LogInfo($"Judge methodPtr: 0x{methodPtr.ToInt64():X}");
 
-                //_detour =
-                INativeDetour.CreateAndApply(methodPtr, JudgeDetour, out _orig);
+                _detour = INativeDetour.CreateAndApply(methodPtr, JudgeDetour, out _orig);
 
                 CustomGameBalancePlugin.Log.LogInfo($"Detour created. Orig delegate null? {_orig == null}");
             }
