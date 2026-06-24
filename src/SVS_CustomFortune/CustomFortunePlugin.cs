@@ -1,20 +1,16 @@
-﻿using ADV;
+﻿using System.IO;
+using ADV;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using Character;
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppSystem.Collections.Generic;
 using SaveData;
 using SV;
-using SV.H.UI;
 using SV.MyRoomScene;
 using SV.Title;
-using System.IO;
-using System.Runtime.InteropServices;
-using UnityEngine;
-using UnityEngine.UI;
 
 
 namespace SVS_CustomFortune
@@ -32,10 +28,10 @@ namespace SVS_CustomFortune
         public static string CustomMapListDirectory { get; } = Path.Combine(Paths.GameRootPath, "abdata\\map\\CustomMaps");
 
         private static ConfigEntry<bool> enableCustomFortunes;
-        private static ConfigEntry<bool> enableWackyFortunes;
-        private static ConfigEntry<bool> forceFortune;
+        //private static ConfigEntry<bool> enableWackyFortunes;
+        //private static ConfigEntry<bool> forceFortune;
 
-        private static ConfigEntry<int> fortuneValue;
+        //private static ConfigEntry<int> fortuneValue;
         public override void Load()
         {
             Log = base.Log;
@@ -64,7 +60,7 @@ namespace SVS_CustomFortune
                 }
             }
 
-            static int currentFortune = -2;
+            private static int currentFortune = -2;
             [HarmonyPostfix]
             [HarmonyPatch(typeof(MyRoom), nameof(MyRoom.Open))]
             public static void RandomizeFortune()
@@ -75,7 +71,7 @@ namespace SVS_CustomFortune
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(ADV.Setup), nameof(ADV.Setup.Open))]
+            [HarmonyPatch(typeof(Setup), nameof(Setup.Open))]
             public static void CustomFortuneScenario(OpenData openData)
             {
                 if (!enableCustomFortunes.Value) return;
@@ -83,7 +79,7 @@ namespace SVS_CustomFortune
                 if (CustomFortuneFunctions.IsCustomFortune(openData.Asset, out int fortuneID))
                 {
                     //Log.LogInfo($"Is Custom Fortune");
-                    openData = CustomFortuneFunctions.SetCustomFortuneScenario(openData, fortuneID);
+                    CustomFortuneFunctions.SetCustomFortuneScenario(openData, fortuneID);
                 }
             }
 
@@ -105,7 +101,7 @@ namespace SVS_CustomFortune
             public static void CustomFortuneFavors(SensitivityParameter __instance, MemoryParameter _memory, int _targetCharaID, Il2CppStructArray<int> _favors)
             {
                 if (!enableCustomFortunes.Value) return;
-                _favors = CustomFortuneFunctions.SetFortuneFavorability(_favors);
+                CustomFortuneFunctions.SetFortuneFavorability(_favors);
             }
 
             [HarmonyPriority(399)]
@@ -114,16 +110,16 @@ namespace SVS_CustomFortune
             public static void ActionAnswerRate(BaseAnswer __instance, YesNoJudgeManager.AnswerInfo _ansInfo, YesNoJudgeManager.YesNoInfo _ynInfo, int _commandID, int _questionCount, Il2CppStructArray<bool> _calcs)
             {
                 if (!enableCustomFortunes.Value) return;
-                _ansInfo = CustomFortuneFunctions.FortuneAnswerRate(_ansInfo, _ynInfo, _commandID, _questionCount);
+                CustomFortuneFunctions.FortuneAnswerRate(_ansInfo, _ynInfo, _commandID, _questionCount);
             }
 
             [HarmonyPriority(399)]
             [HarmonyPrefix]
             [HarmonyPatch(typeof(ConditionManager), nameof(ConditionManager.CharaAdd))]
-            public static void CustomFortuneStates(ConditionManager __instance, Actor _actor, Actor _target, Actor _third, bool _isActive, bool _isEveryone, bool _isIndividualityCalc, Il2CppSystem.Collections.Generic.List<int> _adds)
+            public static void CustomFortuneStates(ConditionManager __instance, Actor _actor, Actor _target, Actor _third, bool _isActive, bool _isEveryone, bool _isIndividualityCalc, List<int> _adds)
             {
                 if (!enableCustomFortunes.Value) return;
-                _adds = CustomFortuneFunctions.SetFortuneStatesPoints(_adds);
+                CustomFortuneFunctions.SetFortuneStatesPoints(_adds);
             }
 
             /*[HarmonyPostfix]

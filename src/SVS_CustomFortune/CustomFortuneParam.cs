@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System;
+using System.Text.Json;
 
 namespace SVS_CustomFortune
 {
@@ -14,8 +14,8 @@ namespace SVS_CustomFortune
             public string Name { get; set; } = "none";
             public string FortuneType { get; set; } = "Normal";
             public int FortuneRate { get; set; } = 1;
-            public List<float> FavorPoints { get; set; } = new List<float>();
-            public List<int> StatesPoints { get; set; } = new List<int>();
+            public List<float> FavorPoints { get; set; } = new();
+            public List<int> StatesPoints { get; set; } = new();
             public int AddSuccessPoint { get; set; } = 0;
             public ActionParam ActionsCommands { get; set; } = new();
             public OutfitParam Outfits { get; set; }
@@ -36,7 +36,7 @@ namespace SVS_CustomFortune
         public class ActionParam
         {
             public List<int> CharaActionsAnswers { get; set; } = new();
-            public Dictionary<int,int> ReduceActionCommandRate { get; set; } = new();
+            public Dictionary<int, int> ReduceActionCommandRate { get; set; } = new();
         }
 
         public class OutfitParam

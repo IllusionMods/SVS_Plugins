@@ -1,16 +1,14 @@
-﻿using BepInEx;
+﻿using System.IO;
+using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using BepInEx.Configuration;
 using HarmonyLib;
+using Il2CppSystem.Collections.Generic;
+using Manager;
 using SV;
-using SV.Talk;
 using SV.Chara;
 using SV.Config;
-using System.IO;
-using Manager;
-using SVS_PersonalityLoader;
-
+using SV.Talk;
 namespace PersonalityLoader
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -28,7 +26,7 @@ namespace PersonalityLoader
         public override void Load()
         {
             Log = base.Log;
-            
+
             patchedHooks = Harmony.CreateAndPatchAll(typeof(Hooks));
         }
         public override bool Unload()
@@ -38,20 +36,20 @@ namespace PersonalityLoader
         }
         internal static class Hooks
         {
-            static int _tmpPerso_A;
-            static int _tmpPerso_B;
-            static int _tmpPerso_C;
-            static int _tmpPerso_D;
+            private static int _tmpPerso_A;
+            private static int _tmpPerso_B;
+            private static int _tmpPerso_C;
+            private static int _tmpPerso_D;
 
-            static int _tempID_A;
-            static int _tempID_B;
-            static int _tempID_C;
-            static int _tempID_D;
+            private static int _tempID_A;
+            private static int _tempID_B;
+            private static int _tempID_C;
+            private static int _tempID_D;
 
-            static int _tempIndexNPC_A;
-            static int _tempIndexNPC_B;
-            static int _tempIndexNPC_C;
-            static int _tempIndexNPC_D;
+            private static int _tempIndexNPC_A;
+            //private static int _tempIndexNPC_B;
+            //private static int _tempIndexNPC_C;
+            //private static int _tempIndexNPC_D;
 
             [HarmonyPrefix]
             [HarmonyPatch(typeof(TalkTaskBase), nameof(TalkTaskBase.ADVStartInPlayer))]
@@ -68,9 +66,9 @@ namespace PersonalityLoader
                 _tempID_D = -1;
 
                 _tempIndexNPC_A = -1;
-                _tempIndexNPC_B = -1;
-                _tempIndexNPC_C = -1;
-                _tempIndexNPC_D = -1;
+                //_tempIndexNPC_B = -1;
+                //_tempIndexNPC_C = -1;
+                //_tempIndexNPC_D = -1;
 
                 if (_npc != null)
                 {
@@ -105,7 +103,7 @@ namespace PersonalityLoader
                     {
                         _tmpPerso_D = _fifth.charaData.parameter.personality;
                         _tempID_D = _fifth.charaData.charasGameParam._Index_k__BackingField;
-                    }                    
+                    }
                 }
 
                 if (_npc != null || _third != null || _fourth != null || _fifth != null)
@@ -119,29 +117,29 @@ namespace PersonalityLoader
                             if (_NPC.charaData.charasGameParam._Index_k__BackingField == _tempID_A)
                             {
                                 SimulationScene._instance.tempAIs[ind]._charaData._chaCtrl_k__BackingField._data_k__BackingField.Parameter.personality = PersonalityLoaderFunctions.SetCustomPersonalityAnimation(PersonalityDirectory, _tmpPerso_A);
-                                _tempIndexNPC_A = ind;                            
+                                _tempIndexNPC_A = ind;
                             }
                             if (_NPC.charaData.charasGameParam._Index_k__BackingField == _tempID_B)
                             {
                                 SimulationScene._instance.tempAIs[ind]._charaData._chaCtrl_k__BackingField._data_k__BackingField.Parameter.personality = PersonalityLoaderFunctions.SetCustomPersonalityAnimation(PersonalityDirectory, _tmpPerso_B);
-                                _tempIndexNPC_B = ind;
+                                //_tempIndexNPC_B = ind; // BUG? _tempIndexNPC_A is used for everything below
                             }
                             if (_NPC.charaData.charasGameParam._Index_k__BackingField == _tempID_C)
                             {
                                 SimulationScene._instance.tempAIs[ind]._charaData._chaCtrl_k__BackingField._data_k__BackingField.Parameter.personality = PersonalityLoaderFunctions.SetCustomPersonalityAnimation(PersonalityDirectory, _tmpPerso_C);
-                                _tempIndexNPC_C = ind;
+                                //_tempIndexNPC_C = ind; // BUG? _tempIndexNPC_A is used for everything below
                             }
                             if (_NPC.charaData.charasGameParam._Index_k__BackingField == _tempID_D)
                             {
                                 SimulationScene._instance.tempAIs[ind]._charaData._chaCtrl_k__BackingField._data_k__BackingField.Parameter.personality = PersonalityLoaderFunctions.SetCustomPersonalityAnimation(PersonalityDirectory, _tmpPerso_D);
-                                _tempIndexNPC_D = ind;
+                                //_tempIndexNPC_D = ind; // BUG? _tempIndexNPC_A is used for everything below
                             }
                             ind++;
                         }
                     }
                 }
             }
-            
+
             [HarmonyPostfix]
             [HarmonyPatch(typeof(TalkTaskBase), nameof(TalkTaskBase.ADVStartInPlayer))]
             public static void CustomPersonalityPostLoad(TalkTaskBase __instance, string _advAsset, int _charaID, int _category, int _playerAction, AI _player, AI _npc, AI _third, AI _fourth, AI _fifth, bool _isBackGround = true, bool _isResetClotheType = true)
@@ -172,12 +170,12 @@ namespace PersonalityLoader
             [HarmonyPostfix]
             [HarmonyPatch(typeof(VoiceSetting), nameof(VoiceSetting.Init))]
             public static void CreateCustomPersonalityVoiceSetting(VoiceSetting __instance)
-            {              
+            {
                 if (Game.expIDCharaDic == null) return;
 
                 if (Game.expIDCharaDic.Count != 0)
                 {
-                    Il2CppSystem.Collections.Generic.List<int> _persoKeys = new Il2CppSystem.Collections.Generic.List<int>();
+                    List<int> _persoKeys = new List<int>();
                     foreach (var ID in Game.expIDCharaDic)
                     {
                         if (ID.Key > 99)
@@ -186,7 +184,7 @@ namespace PersonalityLoader
                         }
                     }
 
-                    var _personalities = Manager.Voice.InfoTable;
+                    var _personalities = Voice.InfoTable;
                     if (_personalities == null) return;
 
                     var _num = __instance._table.Count + 3;

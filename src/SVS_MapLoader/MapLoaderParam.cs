@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System;
-
+using System.Text.Json;
 namespace MapLoader
 {
     internal class MapLoaderParam
@@ -30,12 +29,12 @@ namespace MapLoader
             {
                 return JsonSerializer.Deserialize<List<JobsParam>>(json);
             }
-            catch (ArgumentNullException ane)
+            catch (ArgumentNullException)
             {
                 MapLoaderPlugin.Log.LogInfo($"Failed to load jobs.json file from: {_jobFile}");
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MapLoaderPlugin.Log.LogInfo($"Failed to load one or more Custom Jobs from: {_jobFile}");
                 return JsonSerializer.Deserialize<List<JobsParam>>(json);
@@ -57,7 +56,7 @@ namespace MapLoader
             {
                 return JsonSerializer.Deserialize<List<BGMInfo>>(json);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MapLoaderPlugin.Log.LogInfo($"Failed to load bgm.json File");
                 return null;
@@ -69,7 +68,7 @@ namespace MapLoader
             public string Name { get; set; }
             public string Version { get; set; }
             public string MapLoaderVersion { get; set; }
-            public bool ReplaceDefaultMaps { get; set; } = false;
+            public bool ReplaceDefaultMaps { get; set; }
             public List<string> MapListBundle { get; set; }
             public List<string> JobsADVList { get; set; }
         }
@@ -131,7 +130,7 @@ namespace MapLoader
                 sr.Close();
                 return value;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MapLoaderPlugin.Log.LogInfo($"Failed to load actions.json File");
                 return null;

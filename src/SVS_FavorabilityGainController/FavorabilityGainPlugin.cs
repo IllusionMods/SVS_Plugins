@@ -1,21 +1,25 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using Character;
 using HarmonyLib;
-using SaveData;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
-using Il2CppSystem;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Manager;
+using SaveData;
+using SV;
 using SV.CorrelationDiagramScene;
 using TMPro;
-using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using SV;
-using Character;
-using SVS_FavorabilityGainController;
+using UnityEngine.UI;
+using Math = Il2CppSystem.Math;
+using Object = UnityEngine.Object;
+using Random = System.Random;
+using Scene = UnityEngine.SceneManagement.Scene;
 
 namespace FavorabiltyGainController
 {
@@ -50,7 +54,7 @@ namespace FavorabiltyGainController
         private static ConfigEntry<int> _absoluteMin;
         private static ConfigEntry<int> _absoluteMax;
 
-        private static System.Random _rnd = new System.Random();
+        private static readonly Random _rnd = new();
         private static GameObject FavorCanvasObject;
         private static CorrelationDiagram DiagramSceneInstance;
         private static WorldData _gameInstance;
@@ -62,19 +66,19 @@ namespace FavorabiltyGainController
         private static readonly string _desEnableIndiFavor = "If Enable, it will use the values from the Love, Friend, Distant, Hate sliders to Set how many points the characters get for each Category. (The Slider [Set % gain to all Categories] will be ignored)";
         private static readonly string _desAllSlider = "Set how many SubPoints the characters gain from interactions (in %). Value 0 disable the Favorability Gain system (Characters get 0 points). Value 100 is the default/vanilla Game value";
 
-        private static float _allMod = 0f;
-        private static float _loveMod = 0f;
-        private static float _friendMod = 0f;
-        private static float _distantMod = 0f;
-        private static float _hateMod = 0f;
+        private static float _allMod;
+        private static float _loveMod;
+        private static float _friendMod;
+        private static float _distantMod;
+        private static float _hateMod;
         private static float _roundedValue = 30f;
 
-        private static int _tempL = 0;
-        private static int _tempF = 0;
-        private static int _tempD = 0;
-        private static int _tempH = 0;
-        private static int _randomTotal = 0;
-        private static int _unforseen = 0;
+        private static int _tempL;
+        private static int _tempF;
+        private static int _tempD;
+        private static int _tempH;
+        private static int _randomTotal;
+        private static int _unforseen;
         private static int _currentSelected = -1;
         //private static int _charaList;
 
@@ -82,7 +86,7 @@ namespace FavorabiltyGainController
         {
             Log = base.Log;
 
-            _enableConfig = Config.Bind("General", "Favorability Gain Controller", true, new ConfigDescription("Reload the game to Enable/Disable this mod", null, new ConfigurationManagerAttributes { Order = 4 }));           
+            _enableConfig = Config.Bind("General", "Favorability Gain Controller", true, new ConfigDescription("Reload the game to Enable/Disable this mod", null, new ConfigurationManagerAttributes { Order = 4 }));
             _devLog = Config.Bind("General", "Enable Log", false, new ConfigDescription("Sends information to the LogOutput.log", null, new ConfigurationManagerAttributes { IsAdvanced = true, Order = 3 }));
             _hideShowValuesdesc = Config.Bind("General", "Hide Description", false, new ConfigDescription("Hide the description of the favoarbility values", null, new ConfigurationManagerAttributes { IsAdvanced = true, Order = 2 }));
             _enableShowValues = Config.Bind("General", "Show Favorability Points", true, new ConfigDescription("Show the Favorability Points at the jizo statue. Select a character at the jizo statue to see the exact amount of points a character has toward the selected one", null, new ConfigurationManagerAttributes { Order = 1 }));
@@ -131,7 +135,7 @@ namespace FavorabiltyGainController
             Unforeseen = 4,
         }
 
-        [System.Flags]
+        [Flags]
         public enum SensitivityType
         {
             None = 0,
@@ -170,31 +174,30 @@ namespace FavorabiltyGainController
             else _hateMod = 0;
         }
 
-        public static void MakeFavorabilityCanvas(UnityEngine.SceneManagement.Scene scene)
-        {                
+        public static void MakeFavorabilityCanvas(Scene scene)
+        {
             // Creating Canvas object
             FavorCanvasObject = new GameObject("FavorabilityCanvas");
             SceneManager.MoveGameObjectToScene(FavorCanvasObject, scene);
             FavorCanvasObject.AddComponent<FavorabilityCanvas>();
 
-            if (_devLog.Value) Log.LogInfo($"Favorability Canvas Created");           
+            if (_devLog.Value) Log.LogInfo($"Favorability Canvas Created");
         }
 
-        public class FavorabilityCanvas : MonoBehaviour
+        public class FavorabilityCanvas(IntPtr handle) : MonoBehaviour(handle)
         {
             // Constructor needed to use Start, Update, etc...
-            public FavorabilityCanvas(System.IntPtr handle) : base(handle) { }
 
             private static GameObject favorabilityObject;
             private static TextMeshProUGUI favorInfo;
 
-            private static T GetResource<T>(string name) where T : UnityEngine.Object
+            private static T GetResource<T>(string name) where T : Object
             {
-                var objs = Resources.FindObjectsOfTypeAll(Il2CppInterop.Runtime.Il2CppType.Of<T>());
+                var objs = Resources.FindObjectsOfTypeAll(Il2CppType.Of<T>());
                 for (var i = objs.Length - 1; i >= 0; --i)
                 {
                     var obj = objs[i];
-                    if (obj.name == name)
+                    if (obj != null && obj.name == name)
                     {
                         var ret = obj.TryCast<T>();
                         return ret;
@@ -202,7 +205,8 @@ namespace FavorabiltyGainController
                 }
                 return null;
             }
-            void Start()
+
+            private void Start()
             {
                 // Setting canvas attributes
                 var canvasScaler = FavorCanvasObject.AddComponent<CanvasScaler>();
@@ -221,7 +225,7 @@ namespace FavorabiltyGainController
                 int fontSize = (int)(Screen.height / 60.0f);
 
                 RectTransform favorRect = favorabilityObject.AddComponent<RectTransform>();
-                favorRect.anchoredPosition = new Vector2(10, Screen.height/-8);
+                favorRect.anchoredPosition = new Vector2(10, Screen.height / -8);
                 favorRect.anchorMax = new Vector2(0, 1f);
                 favorRect.anchorMin = new Vector2(0, 1f);
                 favorRect.pivot = new Vector2(0, 1);
@@ -255,7 +259,6 @@ namespace FavorabiltyGainController
                         {
                             _currentSelected = _charaSelected;
 
-                            var favorText = "";
 
                             //_charaList = _gameInstance.Charas.Count;                 
 
@@ -271,10 +274,11 @@ namespace FavorabiltyGainController
                                 _name = _charaInfo.Name;
                             }
 
-                            if (_devLog.Value) Log.LogInfo($"Reading Favorability for: " + _actorID + " Name: " + _name);
+                            if (_devLog.Value) Log.LogInfo("Reading Favorability for: " + _actorID + " Name: " + _name);
 
-                            if (_actorID < 10) favorText = "Selected: " + "0"+_actorID + " " + _name + "\n" + "Favorability: Love/Friend/Distant/Hate \n";
-                            else favorText = "Selected: " + _actorID + " " + _name + "\n" + "Favorability: Love/Friend/Distant/Hate \n";
+                            var favorText = _actorID < 10
+                                ? "Selected: " + "0" + _actorID + " " + _name + "\n" + "Favorability: Love/Friend/Distant/Hate \n"
+                                : "Selected: " + _actorID + " " + _name + "\n" + "Favorability: Love/Friend/Distant/Hate \n";
 
                             foreach (var chara in _gameInstance.Charas)
                             {
@@ -284,31 +288,24 @@ namespace FavorabiltyGainController
                                     if (chara.Key < 10)
                                     {
                                         TranslationHelper.TryTranslate(_charaInfo.Name, out string translatedCharaName);
-                                        _name = translatedCharaName;
-
-                                        if (_name == null)
-                                        {
-                                            _name = _charaInfo.Name;
-                                        }
+                                        _name = translatedCharaName ?? _charaInfo.Name;
 
                                         favorText = favorText + "0" + chara.Key + ": " +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[0] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[1] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[2] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[3] + " | " + _name + "\n";
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[0] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[1] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[2] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[3] + " | " + _name + "\n";
                                     }
                                     else
                                     {
                                         TranslationHelper.TryTranslate(_charaInfo.Name, out string translatedCharaName);
-                                        _name = translatedCharaName;
-
-                                        if (_name == null) _name = _charaInfo.Name;                   
+                                        _name = translatedCharaName ?? _charaInfo.Name;
 
                                         favorText = favorText + chara.Key + ": " +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[0] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[1] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[2] + "/" +
-                                            _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[3] + " | " + _name + "\n";
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[0] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[1] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[2] + "/" +
+                                                    _charaInfo.charasGameParam.sensitivity.tableFavorabiliry[_actorID].longSensitivityCounts[3] + " | " + _name + "\n";
                                     }
                                 }
                             }
@@ -336,10 +333,10 @@ namespace FavorabiltyGainController
             {
                 if (_devLog.Value)
                 {
-                    Log.LogInfo($"New Rate " + __instance.addRates[0]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[1]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[2]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[3]);
+                    Log.LogInfo("New Rate " + __instance.addRates[0]);
+                    Log.LogInfo("New Rate " + __instance.addRates[1]);
+                    Log.LogInfo("New Rate " + __instance.addRates[2]);
+                    Log.LogInfo("New Rate " + __instance.addRates[3]);
 
                     Log.LogInfo($"--------------------------------");
                 }
@@ -427,10 +424,10 @@ namespace FavorabiltyGainController
 
                 if (_devLog.Value)
                 {
-                    Log.LogInfo($"New Rate " + __instance.addRates[0]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[1]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[2]);
-                    Log.LogInfo($"New Rate " + __instance.addRates[3]);
+                    Log.LogInfo("New Rate " + __instance.addRates[0]);
+                    Log.LogInfo("New Rate " + __instance.addRates[1]);
+                    Log.LogInfo("New Rate " + __instance.addRates[2]);
+                    Log.LogInfo("New Rate " + __instance.addRates[3]);
 
                     Log.LogInfo($"--------------------------------");
                 }
@@ -441,17 +438,17 @@ namespace FavorabiltyGainController
             public static void AddFavorOverridePointsGain(SensitivityParameter __instance, MemoryParameter _memory, int _targetCharaID, Il2CppStructArray<int> _favors)
             {
                 var _CharaInfo = Game._saveData_k__BackingField.Charas[_targetCharaID];
-                int _length = _CharaInfo.gameParameter.individuality.answer.Length;
+                //int _length = _CharaInfo.gameParameter.individuality.answer.Length;
                 if (_devLog.Value)
                 {
                     Log.LogInfo($"*********************************");
-                    Log.LogInfo($"Chara Name: " + _CharaInfo.Name);
-                    Log.LogInfo($"Target Chara ID:" + _targetCharaID);
+                    Log.LogInfo("Chara Name: " + _CharaInfo.Name);
+                    Log.LogInfo("Target Chara ID:" + _targetCharaID);
                     //Log.LogInfo($"Points Gained" + _favors.Length);
-                    Log.LogInfo($"Love gain: " + _favors[0]);
-                    Log.LogInfo($"Friend gain: " + _favors[1]);
-                    Log.LogInfo($"Distant gain: " + _favors[2]);
-                    Log.LogInfo($"Hate gain: " + _favors[3]);
+                    Log.LogInfo("Love gain: " + _favors[0]);
+                    Log.LogInfo("Friend gain: " + _favors[1]);
+                    Log.LogInfo("Distant gain: " + _favors[2]);
+                    Log.LogInfo("Hate gain: " + _favors[3]);
                     Log.LogInfo($"---------------------------------");
                 }
 
@@ -582,25 +579,25 @@ namespace FavorabiltyGainController
                             Log.LogInfo($"Set Values Independently");
                             Log.LogInfo($"---------------------------------");
                             Log.LogInfo($"Modifiers");
-                            Log.LogInfo($"ModLove: " + _loveMod);
-                            Log.LogInfo($"ModFriend: " + _friendMod);
-                            Log.LogInfo($"ModDistant: " + _distantMod);
-                            Log.LogInfo($"ModHate: " + _hateMod);
+                            Log.LogInfo("ModLove: " + _loveMod);
+                            Log.LogInfo("ModFriend: " + _friendMod);
+                            Log.LogInfo("ModDistant: " + _distantMod);
+                            Log.LogInfo("ModHate: " + _hateMod);
                         }
                         else
                         {
                             Log.LogInfo($"Set All Values");
                             Log.LogInfo($"---------------------------------");
                             Log.LogInfo($"Modifier");
-                            Log.LogInfo($"ModAll: " + _allMod);
+                            Log.LogInfo("ModAll: " + _allMod);
                         }
 
                         Log.LogInfo($"---------------------------------");
                         Log.LogInfo($"Edited Values");
-                        Log.LogInfo($"Love gain: " + _favors[0]);
-                        Log.LogInfo($"Friend gain: " + _favors[1]);
-                        Log.LogInfo($"Distant gain: " + _favors[2]);
-                        Log.LogInfo($"Hate gain: " + _favors[3]);
+                        Log.LogInfo("Love gain: " + _favors[0]);
+                        Log.LogInfo("Friend gain: " + _favors[1]);
+                        Log.LogInfo("Distant gain: " + _favors[2]);
+                        Log.LogInfo("Hate gain: " + _favors[3]);
                         Log.LogInfo($"*********************************");
                     }
                 }
@@ -630,10 +627,10 @@ namespace FavorabiltyGainController
                                 Log.LogInfo($"/////////////////////////////////");
                                 Log.LogInfo($"FavorModes.FullPoint");
 
-                                Log.LogInfo($"Love gain: " + _favors[0]);
-                                Log.LogInfo($"Friend gain: " + _favors[1]);
-                                Log.LogInfo($"Distant gain: " + _favors[2]);
-                                Log.LogInfo($"Hate gain: " + _favors[3]);
+                                Log.LogInfo("Love gain: " + _favors[0]);
+                                Log.LogInfo("Friend gain: " + _favors[1]);
+                                Log.LogInfo("Distant gain: " + _favors[2]);
+                                Log.LogInfo("Hate gain: " + _favors[3]);
                                 Log.LogInfo($"/////////////////////////////////");
                             }
 
@@ -657,10 +654,10 @@ namespace FavorabiltyGainController
                                 Log.LogInfo($"/////////////////////////////////");
                                 Log.LogInfo($"FavorModes.Reverse");
 
-                                Log.LogInfo($"Love gain: " + _favors[0]);
-                                Log.LogInfo($"Friend gain: " + _favors[1]);
-                                Log.LogInfo($"Distant gain: " + _favors[2]);
-                                Log.LogInfo($"Hate gain: " + _favors[3]);
+                                Log.LogInfo("Love gain: " + _favors[0]);
+                                Log.LogInfo("Friend gain: " + _favors[1]);
+                                Log.LogInfo("Distant gain: " + _favors[2]);
+                                Log.LogInfo("Hate gain: " + _favors[3]);
                                 Log.LogInfo($"/////////////////////////////////");
                             }
 
@@ -682,10 +679,10 @@ namespace FavorabiltyGainController
                                 {
                                     Log.LogInfo($"/////////////////////////////////");
                                     Log.LogInfo($"FavorModes.Random");
-                                    Log.LogInfo($"Love gain: " + _favors[0]);
-                                    Log.LogInfo($"Friend gain: " + _favors[1]);
-                                    Log.LogInfo($"Distant gain: " + _favors[2]);
-                                    Log.LogInfo($"Hate gain: " + _favors[3]);
+                                    Log.LogInfo("Love gain: " + _favors[0]);
+                                    Log.LogInfo("Friend gain: " + _favors[1]);
+                                    Log.LogInfo("Distant gain: " + _favors[2]);
+                                    Log.LogInfo("Hate gain: " + _favors[3]);
                                     Log.LogInfo($"/////////////////////////////////");
                                 }
                             }

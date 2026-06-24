@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.Experimental.Rendering;
+﻿using System.IO;
 using System.Reflection;
-using System.IO;
+using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 namespace SVS_ExpandCharacterRoster.Utils
 {
@@ -64,8 +64,8 @@ namespace SVS_ExpandCharacterRoster.Utils
         }
         public static Texture2D LoadSprite(int type)
         {
-            Assembly moreoutfits = Assembly.GetExecutingAssembly();
-            string resourceSprite = "";
+            //Assembly moreoutfits = Assembly.GetExecutingAssembly();
+            var resourceSprite = "";
 
             switch (type)
             {
@@ -95,7 +95,7 @@ namespace SVS_ExpandCharacterRoster.Utils
                     break;
             }
 
-            Texture2D tex = new Texture2D(2, 2, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
+            var tex = new Texture2D(2, 2, GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
 
             byte[] embeded = GetPngResourceAsByteArray(resourceSprite);
             if (embeded.Length > 0)

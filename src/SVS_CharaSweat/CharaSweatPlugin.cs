@@ -33,9 +33,9 @@ namespace SVS_CharaSweat
         }
         internal static class Hooks
         {
-            static bool[] sweatPC = { false, false };
-            static bool[] sweatNPC = { false, false };
-            static bool[] sweatNPC1 = { false, false };
+            private static bool[] sweatPC = { false, false };
+            private static bool[] sweatNPC = { false, false };
+            private static bool[] sweatNPC1 = { false, false };
             [HarmonyPostfix]
             [HarmonyPatch(typeof(HScene), nameof(HScene.InitializeParameter))]
             public static void StartHScene(HScene __instance, Parameter parameter, Il2CppReferenceArray<Actor> actors)

@@ -1,59 +1,59 @@
-﻿using ADV;
+﻿#nullable enable
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using ADV;
 using BepInEx;
 using BepInEx.Logging;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppSystem.Collections.Generic;
-using ILLGames.Extensions;
 using Manager;
 using SaveData;
 using SV;
 using SV.EntryScene;
 using SV.MyRoomScene;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-
+using Random = System.Random;
 namespace MapLoader
 {
     internal static class MapLoader
     {
-        public static Dictionary<int, List<string>> oldJobNameTable = new Dictionary<int, List<string>>();
+        public static Dictionary<int, List<string>> oldJobNameTable = new();
        
-        private static System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobsParam>> jobsParamDic = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobsParam>>();
-        private static System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<MapLoaderParam.MapActionInfoParam>> mapActionDic = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<MapLoaderParam.MapActionInfoParam>>();
-        private static System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobADV>> jobADVDic = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobADV>>();
+        private static readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobsParam>> jobsParamDic = new();
+        private static readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<MapLoaderParam.MapActionInfoParam>> mapActionDic = new();
+        private static readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<MapLoaderParam.JobADV>> jobADVDic = new();
 
-        private static System.Collections.Generic.Dictionary<int, AssetBundle> _oldBundlesDic = new System.Collections.Generic.Dictionary<int, AssetBundle>();
-        private static System.Collections.Generic.Dictionary<string, AssetBundle> _newBundlesDic = new System.Collections.Generic.Dictionary<string, AssetBundle>();
+        //private static System.Collections.Generic.Dictionary<int, AssetBundle> _oldBundlesDic = new();
+        //private static System.Collections.Generic.Dictionary<string, AssetBundle> _newBundlesDic = new();
 
-        private static System.Collections.Generic.Dictionary<int, List<int[]>> explorableMapList = new System.Collections.Generic.Dictionary<int, List<int[]>>();
+        //private static System.Collections.Generic.Dictionary<int, List<int[]>> explorableMapList = new();
 
-        private static System.Collections.Generic.List<int> tittleMapID = new System.Collections.Generic.List<int>();
+        private static readonly System.Collections.Generic.List<int> tittleMapID = new();
 
-        private static System.Collections.Generic.List<int> _addedLocationsToIDs = new System.Collections.Generic.List<int>();
-        private static System.Collections.Generic.List<int> _newBGMListIndex = new System.Collections.Generic.List<int>();
-        private static System.Collections.Generic.List<int[]> _oldIDtoNewIDList = new System.Collections.Generic.List<int[]>();
-        private static System.Collections.Generic.List<string> _MapPacksList = new System.Collections.Generic.List<string>();
+        //private static readonly System.Collections.Generic.List<int> _addedLocationsToIDs = new();
+        //private static System.Collections.Generic.List<int> _newBGMListIndex = new();
+        //private static System.Collections.Generic.List<int[]> _oldIDtoNewIDList = new();
+        private static readonly System.Collections.Generic.List<string> _MapPacksList = new();
         //private static System.Collections.Generic.List<int[]> _startingMapsIDs = new System.Collections.Generic.List<int[]>();
 
-        private static System.Collections.Generic.List<int> soloMapsList = new System.Collections.Generic.List<int>();
+        private static readonly System.Collections.Generic.List<int> soloMapsList = new();
 
-        private static System.Collections.Generic.List<MapLoaderParam.BGMInfo> _customBGMList = new System.Collections.Generic.List<MapLoaderParam.BGMInfo>();
-        private static System.Collections.Generic.List<AssetBundle> _newBundles = new System.Collections.Generic.List<AssetBundle>();
-        private static System.Collections.Generic.List<AssetBundle> _oldBundles = new System.Collections.Generic.List<AssetBundle>();
+        private static System.Collections.Generic.List<MapLoaderParam.BGMInfo> _customBGMList = new();
+        //private static System.Collections.Generic.List<AssetBundle> _newBundles = new();
+        //private static System.Collections.Generic.List<AssetBundle> _oldBundles = new();
        
         //private static System.Collections.Generic.List<int> femaleChangingRoomsList = new System.Collections.Generic.List<int>();
         //private static System.Collections.Generic.List<int> maleChangingRoomsList = new System.Collections.Generic.List<int>();
 
-        public static System.Random _rnd = new System.Random();
+        public static Random _rnd = new();
 
-        public static bool _taskMapLoader = false;
-        public static bool _customMapsLoaded = false;
+        public static bool _taskMapLoader;
+        public static bool _customMapsLoaded;
 
-        private static int tittleMapCount = 0;
+        private static int tittleMapCount;
 
         public static void InitLoad()
         {
@@ -145,16 +145,16 @@ namespace MapLoader
         }
         public static string GetCustomMapPath()
         {
-            string customMapPath = System.IO.Path.Combine(Paths.GameRootPath, "abdata\\mods\\CustomMaps");
+            string customMapPath = Path.Combine(Paths.GameRootPath, "abdata\\mods\\CustomMaps");
             return customMapPath;
         }
         public static string GetGamePath()
         {
-            string GamePath = System.IO.Path.GetFullPath(Paths.GameRootPath);
+            string GamePath = Path.GetFullPath(Paths.GameRootPath);
             return GamePath;
         }
         //
-        public static T? LoadAsset<T>(this AssetBundle bundle, string name) where T : UnityEngine.Object
+        public static T? LoadAsset<T>(this AssetBundle bundle, string name) where T : Object
         {
             return bundle.LoadAsset(name, Il2CppType.Of<T>())?.Cast<T>();
         }
@@ -168,7 +168,7 @@ namespace MapLoader
             // You can get all resource names using assembly.GetManifestResourceNames() for debugging.
             string fullResourceName = resourceName;
 
-            using (Stream stream = assembly.GetManifestResourceStream(fullResourceName))
+            using (var stream = assembly.GetManifestResourceStream(fullResourceName))
             {
                 if (stream == null)
                 {
@@ -187,7 +187,7 @@ namespace MapLoader
         {
             DirectoryInfo dirInfo = new DirectoryInfo(customMapDirectory);
             var mapPacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
-            if (mapPacks.Length == 0 || mapPacks == null) return false;
+            if (mapPacks.Length == 0) return false;
             if (mapPacks.Length > 1)
             {
                 MapLoaderPlugin.Log.Log(LogLevel.Message, $"Multiple Map Packs Detected! Only one will be loaded");
@@ -199,7 +199,7 @@ namespace MapLoader
                 if (Directory.Exists(_checkPath))
                 {
                     var _mapListFilePath = Path.Combine(pack.FullName, "mapinfo\\pack.json");
-                    if (!System.IO.File.Exists(_mapListFilePath))
+                    if (!File.Exists(_mapListFilePath))
                     {
                         MapLoaderPlugin.Log.Log(LogLevel.Message, $"Missing pack.json file for Custom map {pack.Name}");
                         continue;
@@ -237,7 +237,8 @@ namespace MapLoader
                     MapLoaderPlugin.Log.Log(LogLevel.Message, $"Custom Map: {_mapInfoList.Name} version: {_mapInfoList.Version} has been loaded!");
                     return true;
                 }
-                else MapLoaderPlugin.Log.Log(LogLevel.Message, $"Missing mapinfo folder for Custom map {pack.Name}");
+
+                MapLoaderPlugin.Log.Log(LogLevel.Message, $"Missing mapinfo folder for Custom map {pack.Name}");
             }
             return false;
         }
@@ -245,7 +246,7 @@ namespace MapLoader
         {
             DirectoryInfo dirInfo = new DirectoryInfo(customMapDirectory);
             var mapPacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
-            if (mapPacks.Length == 0 || mapPacks == null) return false;
+            if (mapPacks.Length == 0) return false;
             MapLoaderPlugin.Log.LogInfo($"Loading old pack.json file");
 
             foreach (var pack in mapPacks)
@@ -254,7 +255,7 @@ namespace MapLoader
                 if (Directory.Exists(_checkPath))
                 {
                     var _mapListFilePath = Path.Combine(pack.FullName, "mapinfo\\pack.json");
-                    if (!System.IO.File.Exists(_mapListFilePath))
+                    if (!File.Exists(_mapListFilePath))
                     {
                         MapLoaderPlugin.Log.Log(LogLevel.Message, $"OLD Missing pack.json file for Custom map {pack.Name}");
                         continue;
@@ -281,7 +282,8 @@ namespace MapLoader
                     MapLoaderPlugin.Log.Log(LogLevel.Message, $"Custom Map:{_oldMapInfoList.Name} version:{_oldMapInfoList.Version} has been loaded!");
                     return true;
                 }
-                else MapLoaderPlugin.Log.Log(LogLevel.Message, $"Missing mapinfo folder for Custom map {pack.Name}");
+
+                MapLoaderPlugin.Log.Log(LogLevel.Message, $"Missing mapinfo folder for Custom map {pack.Name}");
             }
             return false;
         }
@@ -301,7 +303,7 @@ namespace MapLoader
                 if (Directory.Exists(_checkPath))
                 {
                     var _bgmFilePath = Path.Combine(pack, "mapinfo\\bgm.json");
-                    if (!System.IO.File.Exists(_bgmFilePath)) continue;
+                    if (!File.Exists(_bgmFilePath)) continue;
 
                     _customBGMList = MapLoaderParam.DeserializeBGM(_bgmFilePath);
                     if (_customBGMList == null || _customBGMList.Count <= 0)
@@ -312,7 +314,7 @@ namespace MapLoader
                     bgmLoaded = true;
                 }
             }
-            if (bgmLoaded) MapLoaderPlugin.Log.LogInfo($"Loaded {_customBGMList.Count} Custom BGMs");
+            if (bgmLoaded) MapLoaderPlugin.Log.LogInfo($"Loaded {_customBGMList?.Count ?? 0} Custom BGMs");
             else MapLoaderPlugin.Log.LogInfo($"No Custom BGMs detected");
         }       
         //
@@ -322,7 +324,7 @@ namespace MapLoader
 
             DirectoryInfo dirInfo = new DirectoryInfo(_customMapPath);
             var mapPacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
-            if (mapPacks.Length == 0 || mapPacks == null) return false;
+            if (mapPacks.Length == 0) return false;
             int key = 100;
             foreach (var pack in mapPacks)
             {
@@ -330,9 +332,8 @@ namespace MapLoader
                 if (Directory.Exists(_checkPath))
                 {
                     var _mapActionFilePath = Path.Combine(pack.FullName, "mapinfo\\actions.json");
-                    if (!System.IO.File.Exists(_mapActionFilePath)) continue;
-                    System.Collections.Generic.List<MapLoaderParam.MapActionInfoParam> _mapActionList = new System.Collections.Generic.List<MapLoaderParam.MapActionInfoParam>();
-                    _mapActionList = MapLoaderParam.DeserializeMapAction(_mapActionFilePath);
+                    if (!File.Exists(_mapActionFilePath)) continue;
+                    var _mapActionList = MapLoaderParam.DeserializeMapAction(_mapActionFilePath);
                     if (_mapActionList == null || _mapActionList.Count <= 0)
                     {
                         MapLoaderPlugin.Log.LogInfo($"Invalid Map Actions Json File");
@@ -381,10 +382,10 @@ namespace MapLoader
                     if (!_independentAction.ContainsKey(mapAction.ID))
                     {
                         int ID = mapAction.ID;
-                        ThinkingBaseFloatDataParam thinkingBaseFloatDataParam = new ThinkingBaseFloatDataParam();
+                        var thinkingBaseFloatDataParam = new ThinkingBaseFloatDataParam();
                         thinkingBaseFloatDataParam.ID = ID;
                         thinkingBaseFloatDataParam.BaseRate = mapAction.BaseRate;
-                        thinkingBaseFloatDataParam.Rates = new Il2CppSystem.Collections.Generic.List<float>();
+                        thinkingBaseFloatDataParam.Rates = new List<float>();
                         foreach (var rate in mapAction.Rates)
                         {
                             thinkingBaseFloatDataParam.Rates.Add(rate);
@@ -405,7 +406,7 @@ namespace MapLoader
             {
                 System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<int[]>> jobParamList = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<int[]>>();
 
-                int weekDay = Manager.Game.saveData.Week;
+                int weekDay = Game.saveData.Week;
                 int charaJob = actor.Job;
                 int mapChara = actor.charaBase.BehaviourCtrl.nowMapID;
                 int mapNPC = -2;
@@ -444,7 +445,7 @@ namespace MapLoader
                         var chance = _rnd.Next(0, 100);
                         var time = MapLoaderUtils.GetTimeZone();
 
-                        string day = "Monday";
+                        string day;
                         switch (weekDay)
                         {
                             case 0:
@@ -565,7 +566,7 @@ namespace MapLoader
             if (_newActorAI.CharaCtrl.Target.kind == BehaviourController.TargetInfo.TargetKind.Map) return false;
             if (_newActorAI.CharaCtrl.AI.charaData.CommandNo != 37) return false;
 
-            if (Manager.Game.saveData.Charas.ContainsKey(_newActorAI.CharaCtrl.Target.id))
+            if (Game.saveData.Charas.ContainsKey(_newActorAI.CharaCtrl.Target.id))
             {
                 var _listAI = SimulationScene._instance.tempAIs;
                 foreach (var _ai in _listAI)
@@ -610,9 +611,9 @@ namespace MapLoader
             }*/
             return false;
         }
-        public static YesNoJudgeManager.AnswerInfo ActionSuccessRate(YesNoJudgeManager.AnswerInfo _ansInfo, YesNoJudgeManager.YesNoInfo _ynInfo, int _commandID)
+        public static void ActionSuccessRate(YesNoJudgeManager.AnswerInfo _ansInfo, YesNoJudgeManager.YesNoInfo _ynInfo, int _commandID)
         {
-            if (_ynInfo.passive == null) return _ansInfo;         
+            if (_ynInfo.passive == null) return;         
             var isCustomMap = IsCustomaMap(_ynInfo);
             //Check if the Always 100% success rate is on.
             var alwaysTrue = Game.IsUnlockedAdditionalFunction(22);
@@ -664,14 +665,12 @@ namespace MapLoader
                             break;
                         }
                         if (_ansInfo.rate == newRate) break;
-                        else _ansInfo.rate = newRate;
+                        _ansInfo.rate = newRate;
                         int chance = _rnd.Next(1, 100);
-                        if (chance <= _ansInfo.rate) _ansInfo.ans = 0;
-                        else _ansInfo.ans = 1;
+                        _ansInfo.ans = chance <= _ansInfo.rate ? 0 : 1;
                     }                       
                     break;
             }
-            return _ansInfo;
         }
         public static float CalcFollowMeSexRoomBaseRate(Actor _actor, Actor askingActor, float oldRate)
         {
@@ -780,7 +779,7 @@ namespace MapLoader
         {
             DirectoryInfo dirInfo = new DirectoryInfo(_customMapPath);
             var mapPacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
-            if (mapPacks.Length == 0 || mapPacks == null) return false;
+            if (mapPacks.Length == 0) return false;
 
             foreach (var pack in mapPacks)
             {
@@ -788,9 +787,8 @@ namespace MapLoader
                 if (Directory.Exists(_checkPath))
                 {
                     var _jobFilePath = Path.Combine(pack.FullName, "mapinfo\\jobs.json");
-                    if (!System.IO.File.Exists(_jobFilePath)) continue;
-                    System.Collections.Generic.List<MapLoaderParam.JobsParam> _jobList = new System.Collections.Generic.List<MapLoaderParam.JobsParam>();
-                    _jobList = MapLoaderParam.DeserializeJobs(_jobFilePath);
+                    if (!File.Exists(_jobFilePath)) continue;
+                    var _jobList = MapLoaderParam.DeserializeJobs(_jobFilePath);
                     if (_jobList == null || _jobList.Count <= 0)
                     {
                         MapLoaderPlugin.Log.LogInfo($"Invalid Jobs Json File");
@@ -808,10 +806,9 @@ namespace MapLoader
             {
                 var jobADVFile = Path.Combine(GetCustomMapPath(), advPath);
 
-                if (!System.IO.File.Exists(jobADVFile)) return;
+                if (!File.Exists(jobADVFile)) return;
 
-                System.Collections.Generic.List<MapLoaderParam.JobADV> jobADVList = new System.Collections.Generic.List<MapLoaderParam.JobADV>();
-                jobADVList = MapLoaderParam.DeserializeJobADV(jobADVFile);
+                var jobADVList = MapLoaderParam.DeserializeJobADV(jobADVFile);
                 if (jobADVList == null || jobADVList.Count <= 0)
                 {
                     MapLoaderPlugin.Log.LogInfo($"Invalid Jobs Json File");
@@ -832,7 +829,6 @@ namespace MapLoader
 
             if (_changeOfClothesMaps == null) return;
 
-            int _index = 0;
             foreach (var _jobList in jobsParamDic.Values)
             {
                 foreach (var _job in _jobList)
@@ -840,18 +836,18 @@ namespace MapLoader
                     if (_startingMapsIDs.Count > 0) _startingMapsIDs.Clear();
                     if (changingRoomCustomJobMapsIDs.Count > 0) changingRoomCustomJobMapsIDs.Clear();
 
-                    if (_job == null || _job.JobID < 0) continue;
+                    if (_job.JobID < 0) continue;
 
                     if (_job.CustomJob) //Set Custom Jobs Starting Map Locations.
                     {
-                        if (_addedLocationsToIDs.Contains(_job.JobID)) continue;
+                        //if (_addedLocationsToIDs.Contains(_job.JobID)) continue;
                         if (_changeOfClothesMaps.ContainsKey(_job.JobID)) continue;
 
                         //
-                        StartMapIDDataParam startMapIDDataParam = new StartMapIDDataParam();
+                        var startMapIDDataParam = new StartMapIDDataParam();
                         startMapIDDataParam.ID = _job.JobID;
 
-                        List<StartMapIDDataParamMap> mapsRates = new List<StartMapIDDataParamMap>();
+                        var mapsRates = new List<StartMapIDDataParamMap>();
 
                         foreach (var _idList in _job.StartingLocation.Values)
                         {
@@ -931,8 +927,8 @@ namespace MapLoader
                         if (_startingMapsIDs.Count == 28)
                         {
                             //Add new starting locations to the Starting Location List (StartMapIDDataParamMap).
-                            _index = 0;
-                            foreach (var _daysAndPeriods in _changeOfClothesMaps[_job.JobID].Rates)
+                            var _index = 0;
+                            foreach (var _ in _changeOfClothesMaps[_job.JobID].Rates)
                             {
                                 if (_startingMapsIDs[_index].Length <= 0) continue;
                                 for (int i = 0; i < _startingMapsIDs[_index].Length; i++)
@@ -969,17 +965,16 @@ namespace MapLoader
 
             if (_changeOfClothesMaps == null) return;
 
-            int _index = 0;
             foreach (var _jobList in jobsParamDic.Values)
             {
                 foreach (var _job in _jobList)
                 {
                     if (_changingRoomMapsIDs.Count > 0) _changingRoomMapsIDs.Clear();
-                    if (_job == null || _job.JobID < 0) continue;
+                    if (_job.JobID < 0) continue;
 
                     if (_job.CustomJob) //Set Custom Jobs Changing Clothes Locations.
                     {
-                        if (_addedLocationsToIDs.Contains(_job.JobID)) continue;
+                        //if (_addedLocationsToIDs.Contains(_job.JobID)) continue;
                         if (_changeOfClothesMaps.ContainsKey(_job.JobID)) continue;
 
                         //
@@ -1016,8 +1011,8 @@ namespace MapLoader
                         if (_changingRoomMapsIDs.Count == 28)
                         {
                             //Add new Changing Clothes locations to the *** List (***).
-                            _index = 0;
-                            foreach (var _daysAndPeriods in _changeOfClothesMaps[_job.JobID].Rates)
+                            var _index = 0;
+                            foreach (var _ in _changeOfClothesMaps[_job.JobID].Rates)
                             {
                                 if (_changingRoomMapsIDs[_index].Length <= 0) continue;
                                 for (int i = 0; i < _changingRoomMapsIDs[_index].Length; i++)
@@ -1147,13 +1142,13 @@ namespace MapLoader
         {
             if (MapManager.Instance.MapListTable[changingRoomID].Sex == -1) return changingRoomID;
 
-            var timeZone = SimulationManager.Instance.Mode;
+            //var timeZone = SimulationManager.Instance.Mode;
             int newPeriod = MapLoaderUtils.GetTimeZone();
 
             if (newPeriod == -1) return changingRoomID;
 
             int sex = _chara.parameter.sex;
-            int weekDay = Manager.Game.saveData.Week;
+            int weekDay = Game.saveData.Week;
             var changeList = ThinkingManager.Instance.changeOfClothesMap;
 
             if (changeList.Count == 0) return changingRoomID;
@@ -1197,7 +1192,8 @@ namespace MapLoader
                             var id = _rnd.Next(0, changeMaps.Count - 1);
                             return changeMaps[id];
                         }
-                        else if (changeMaps.Count == 1)
+
+                        if (changeMaps.Count == 1)
                         {
                             return changeMaps[0];
                         }
@@ -1221,7 +1217,8 @@ namespace MapLoader
                             var id = _rnd.Next(0, changeMaps.Count - 1);
                             return changeMaps[id];
                         }
-                        else if (changeMaps.Count == 1)
+
+                        if (changeMaps.Count == 1)
                         {
                             return changeMaps[0];
                         }
@@ -1320,8 +1317,7 @@ namespace MapLoader
             {
                 if (spPath.Count == 0 || i < 4) continue;
 
-                Texture2D tex = new Texture2D(2, 2, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
-                byte[] fileData;
+                Texture2D tex = new Texture2D(2, 2, GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
                 string spritePath = "";
                 if (i < spPath.Count)
                 {
@@ -1330,7 +1326,7 @@ namespace MapLoader
 
                 if (File.Exists(spritePath))
                 {
-                    fileData = File.ReadAllBytes(spritePath);
+                    var fileData = File.ReadAllBytes(spritePath);
                     tex.LoadImage(fileData);
                     tex.filterMode = FilterMode.Bilinear;
                     tex.Compress(true);
@@ -1341,7 +1337,7 @@ namespace MapLoader
                 }
                 else
                 {
-                    Assembly moreoutfits = Assembly.GetExecutingAssembly();
+                    //Assembly moreoutfits = Assembly.GetExecutingAssembly();
                     string resourceOutfits = "SVS_MapLoader.Resources.workIcon_Error.png";
 
                     byte[] embeded = GetPngResourceAsByteArray(resourceOutfits);
@@ -1377,8 +1373,7 @@ namespace MapLoader
             {
                 if (spPath.Count == 0 || i < 4) continue;
 
-                Texture2D tex = new Texture2D(2, 2, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
-                byte[] fileData;
+                var tex = new Texture2D(2, 2, GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
 
                 string spritePath = "";
                 if (i < spPath.Count)
@@ -1388,7 +1383,7 @@ namespace MapLoader
 
                 if (File.Exists(spritePath) && spPath[i] != "")
                 {
-                    fileData = File.ReadAllBytes(spritePath);
+                    var fileData = File.ReadAllBytes(spritePath);
                     tex.LoadImage(fileData);
                     tex.filterMode = FilterMode.Bilinear;
                     tex.Compress(true);
@@ -1399,7 +1394,7 @@ namespace MapLoader
                 }
                 else
                 {
-                    Assembly moreoutfits = Assembly.GetExecutingAssembly();
+                    //Assembly moreoutfits = Assembly.GetExecutingAssembly();
                     string resourceOutfits = "SVS_MapLoader.Resources.workIcon_Error.png";
 
                     byte[] embeded = GetPngResourceAsByteArray(resourceOutfits);

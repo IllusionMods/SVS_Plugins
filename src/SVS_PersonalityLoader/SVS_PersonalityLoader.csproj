@@ -4,5 +4,7 @@
 		<Version>0.6.2</Version>
 		<!-- Sets the 'File description' field on the dll file -->
 		<AssemblyTitle>Enables custom personalities to work in the game</AssemblyTitle>
+
+		<RootNamespace>PersonalityLoader</RootNamespace>
 	</PropertyGroup>
 </Project>

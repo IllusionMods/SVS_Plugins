@@ -1,4 +1,5 @@
-﻿using Manager;
+﻿using System;
+using Manager;
 using SV;
 using SV.CharaSelectScene;
 using SV.CorrelationDiagramScene;
@@ -16,21 +17,21 @@ namespace SVS_ExpandCharacterRoster
         private static GameObject expandObj;
         private static GameObject charaNumText;
 
-        private static int currentMax = 0;
+        private static int currentMax;
 
-        private static bool setPlayer = false;
+        private static bool setPlayer;
 
-        private static bool restoreCharaRoster = false;
-        private static bool restoreCharaSelect = false;
-        private static bool restoreCharaCorre = false;
+        private static bool restoreCharaRoster;
+        private static bool restoreCharaSelect;
+        private static bool restoreCharaCorre;
 
         private static bool setWhenOpen = true;
 
-        private static bool setCharaSelectMenu = false;
-        private static bool setCorrelationMenu = false;
+        private static bool setCharaSelectMenu;
+        private static bool setCorrelationMenu;
 
-        private static bool isSimRoomToMorning = false;
-        private static bool isSimMorning = false;
+        private static bool isSimRoomToMorning;
+        private static bool isSimMorning;
         public static void ResetValues()
         {
             currentMax = 0;
@@ -244,14 +245,8 @@ namespace SVS_ExpandCharacterRoster
                 var expandPanel = CharaEntryInstance.transform.Find("Canvas/MainPanel/CharaList/Window/Right/Expand");
                 if (expandPanel != null) return;
 
-                Sprite sliderSprite;
-
                 var imgSprite = rightPanel.GetComponentInChildren<Image>();
-                if (imgSprite != null)
-                {
-                    sliderSprite = imgSprite.sprite;
-                }
-                else sliderSprite = new Sprite();
+                var sliderSprite = imgSprite != null ? imgSprite.sprite : new Sprite();
                 var textFont = rightPanel.GetComponentInChildren<TextMeshProUGUI>();
 
                 expandObj = new GameObject("Expand");
@@ -271,7 +266,7 @@ namespace SVS_ExpandCharacterRoster
                 imgComp.sprite = sliderSprite;
                 imgComp.type = Image.Type.Sliced;
 
-                GameObject expandTextObj = new GameObject("expandTxt");
+                var expandTextObj = new GameObject("expandTxt");
                 expandTextObj.layer = 5;
                 expandTextObj.AddComponent<RectTransform>();
                 expandTextObj.AddComponent<CanvasRenderer>();
@@ -297,7 +292,7 @@ namespace SVS_ExpandCharacterRoster
 
                 CreateSlider(expandObj);
                 
-                GameObject charaNum = new GameObject("charaNum");
+                var charaNum = new GameObject("charaNum");
                 charaNum.layer = 5;
                 charaNum.AddComponent<RectTransform>();
                 charaNum.AddComponent<CanvasRenderer>();
@@ -464,7 +459,7 @@ namespace SVS_ExpandCharacterRoster
             sliderObjComp.fillRect = fillObjRect;
             sliderObjComp.handleRect = handleObjRect;
 
-            UnityAction<float> act = new System.Action<float>((float value) => { SetCharaNumText(sliderComp.value); });
+            UnityAction<float> act = new Action<float>(_ => { SetCharaNumText(sliderComp.value); });
             sliderComp.onValueChanged.AddListener(act);
         }
         public static void LoadCharasWithNegatives(SimulationScene simulation)

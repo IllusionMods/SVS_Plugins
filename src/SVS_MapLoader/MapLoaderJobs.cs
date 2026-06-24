@@ -1,15 +1,15 @@
-﻿using Manager;
-using SaveData;
-using SV;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Manager;
+using SaveData;
+using SV;
 
 namespace MapLoader
 {
     internal class MapLoaderJobs
     {
-        public static Random rnd = new Random();
+        public static Random rnd = new();
         public static void JobsFollowMeRestrictions(Actor askingChara,Dictionary<string, List<MapLoaderParam.JobsParam>> customJobs)
         {
             if (askingChara.IsPC) return;           
@@ -88,17 +88,15 @@ namespace MapLoader
                 }
             }
 
-            Dictionary<string, List<int[]>> explorableAreasDic = new Dictionary<string, List<int[]>>();
-            List<MapLoaderParam.MapActionInfoParam> mapActionList = new();
-            List<MapLoaderParam.JobsParam> jobParamList = new();
-            mapActionList = MapLoader.GetMapActionList();
-            jobParamList = MapLoader.GetJobsParams();
+            var explorableAreasDic = new Dictionary<string, List<int[]>>();
+            var mapActionList = MapLoader.GetMapActionList();
+            var jobParamList = MapLoader.GetJobsParams();
 
             string day = MapLoaderUtils.GetWeekDay();
             int time = MapLoaderUtils.GetTimeZone();
-            int chance = rnd.Next(0, 100);
-            int targetMapID = charaBehaviour.target.id;
-            int typeNum = -1;
+            //int chance = rnd.Next(0, 100);
+            //int targetMapID = charaBehaviour.target.id;
+            int typeNum;
             int jobNum = -1;
 
             foreach (var jobParam in jobParamList)

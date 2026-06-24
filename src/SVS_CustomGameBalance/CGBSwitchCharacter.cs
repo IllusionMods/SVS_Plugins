@@ -1,4 +1,6 @@
-﻿using ADV;
+﻿using System;
+using ADV;
+using BepInEx.Logging;
 using Manager;
 using SV;
 using SV.CharaSelectScene;
@@ -50,7 +52,7 @@ namespace SVS_CustomGameBalance
                 btnImage.name = "btnSwitchSp";
                 var btn = PCSwitch.GetComponent<Button>();
                 btn.image = btnImage;
-                UnityAction act = new System.Action(() => { SwitchPCCharacter(); });
+                UnityAction act = new Action(() => { SwitchPCCharacter(); });
                 btn.onClick.AddListener(act);
                 CustomGameBalancePlugin.Log.LogInfo($"Switch PC Button Created");
             }
@@ -103,12 +105,10 @@ namespace SVS_CustomGameBalance
                             SV.Sound.Play(SystemSE.sel);
                             return;
                         }
-                        else
-                        {
-                            SV.Sound.Play(SystemSE.back);
-                            CustomGameBalancePlugin.Log.Log(BepInEx.Logging.LogLevel.Message, $"Can not switch, NPC is busy!");
-                            return;
-                        }
+
+                        SV.Sound.Play(SystemSE.back);
+                        CustomGameBalancePlugin.Log.Log(LogLevel.Message, $"Can not switch, NPC is busy!");
+                        return;
                     }
                 }
             }

@@ -8,11 +8,13 @@ using Manager;
 using SaveData;
 using SV;
 using SV.Chara;
+using SV.CharaSelectScene;
 using SV.CommonUI.CharaSelect;
 using SV.CorrelationDiagramScene;
 using SV.EntryScene;
 using SVS_ExpandCharacterRoster.Utils;
 using UnityEngine.UI;
+using CharaListView = SV.EntryScene.CharaListView;
 
 namespace SVS_ExpandCharacterRoster
 {
@@ -99,8 +101,8 @@ namespace SVS_ExpandCharacterRoster
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(SV.EntryScene.CharaListView), nameof(SV.EntryScene.CharaListView.Initialize))]
-            public static void IncreaseCharaMaxInRosterMenu(SV.EntryScene.CharaListView __instance)
+            [HarmonyPatch(typeof(CharaListView), nameof(CharaListView.Initialize))]
+            public static void IncreaseCharaMaxInRosterMenu(CharaListView __instance)
             {
                 //Simple way of increasing the character roster limit for the roster menu
                 //_fileList is an Il2CppReferenceArray that contains the Actors, it can have nulls for Actors.
@@ -115,8 +117,8 @@ namespace SVS_ExpandCharacterRoster
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(SV.EntryScene.CharaListView), nameof(SV.EntryScene.CharaListView.Initialize))]
-            public static void ChangeIcons(SV.EntryScene.CharaListView __instance)
+            [HarmonyPatch(typeof(CharaListView), nameof(CharaListView.Initialize))]
+            public static void ChangeIcons(CharaListView __instance)
             {
                 if (__instance._viewer._bg.Length > 0)
                 {
@@ -172,8 +174,8 @@ namespace SVS_ExpandCharacterRoster
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(SV.EntryScene.CharaListView.Viewer), nameof(SV.EntryScene.CharaListView.Viewer.Initialize), typeof(SexualTargetUI.IndexData<SexualTargetActorUI>))]
-            public static void AddCharaMaxInActionMenu(SV.EntryScene.CharaListView.Viewer __instance, SexualTargetUI.IndexData<SexualTargetActorUI> indexData)
+            [HarmonyPatch(typeof(CharaListView.Viewer), nameof(CharaListView.Viewer.Initialize), typeof(SexualTargetUI.IndexData<SexualTargetActorUI>))]
+            public static void AddCharaMaxInActionMenu(CharaListView.Viewer __instance, SexualTargetUI.IndexData<SexualTargetActorUI> indexData)
             {
                 //increase the _indexData if it was done before for roster menu
                 if (charaLimit.Value > 24)
@@ -183,8 +185,8 @@ namespace SVS_ExpandCharacterRoster
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(SV.CharaSelectScene.CharaSelect), nameof(SV.CharaSelectScene.CharaSelect.Initialize))]
-            public static void IncreaseCharaMaxInActionMenu(SV.CharaSelectScene.CharaSelect __instance)
+            [HarmonyPatch(typeof(CharaSelect), nameof(CharaSelect.Initialize))]
+            public static void IncreaseCharaMaxInActionMenu(CharaSelect __instance)
             {
                 if (__instance._charaListView._viewer._fileList.Count == 24) __instance._charaListView._viewer._fileList = new Il2CppReferenceArray<Actor>(absoluteMax);
             }
@@ -200,7 +202,7 @@ namespace SVS_ExpandCharacterRoster
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(SV.CorrelationDiagramScene.CharaListView.Viewer), nameof(SV.CorrelationDiagramScene.CharaListView.Viewer.Initialize), typeof(CharaListViewUI<SV.CorrelationDiagramScene.CorrelationDiagram>))]
+            [HarmonyPatch(typeof(SV.CorrelationDiagramScene.CharaListView.Viewer), nameof(SV.CorrelationDiagramScene.CharaListView.Viewer.Initialize), typeof(CharaListViewUI<CorrelationDiagram>))]
             public static void IncreaseCharaMaxInCorrelationMenu(SV.CorrelationDiagramScene.CharaListView.Viewer __instance, CharaListViewUI<CorrelationDiagram> listViewUI)
             {
                 if (__instance._fileList.Count == 24) __instance._fileList = new Il2CppReferenceArray<Actor>(absoluteMax);
@@ -215,12 +217,12 @@ namespace SVS_ExpandCharacterRoster
                     if (__instance._indexData.Count == 24) __instance._indexData = new Il2CppReferenceArray<SexualTargetUI.IndexData<SexualTargetActorUI>>(absoluteMax);
                     if (!indexData.Data.IsActive()) indexData.Data.SetActive(true);
                 }
-            }           
+            }
 
-            static int seat = 0;
-            static int randomSeat = 0;
-            static int seatWith = 0;
-            static int randomSeatWith = 0;
+            private static int seat;
+            private static int randomSeat;
+            private static int seatWith;
+            private static int randomSeatWith;
 
             [HarmonyWrapSafe]
             [HarmonyPrefix]

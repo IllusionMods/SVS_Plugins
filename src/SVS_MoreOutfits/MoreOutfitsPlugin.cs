@@ -1,4 +1,6 @@
-﻿using BepInEx;
+﻿using System;
+using System.Collections.Generic;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
@@ -10,8 +12,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SaveData;
 using SV;
 using SV.CoordeSelectScene;
-using System;
-
+using TMPro;
 namespace SVS_MoreOutfits
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -22,7 +23,7 @@ namespace SVS_MoreOutfits
         public const string Version = Constants.Version;
 
         internal static new ManualLogSource Log;
-        private static Harmony patchedHooks;
+        //private static Harmony patchedHooks;
         private static ConfigEntry<int> maxOutfits { get; set; }
 
         private static ConfigEntry<bool> changePCOutfit;
@@ -41,23 +42,23 @@ namespace SVS_MoreOutfits
 
         //internal static ConfigEntry<KeyCode> toggleKey_Test { get; set; }
 
-        private static System.Collections.Generic.List<string> outfitsList = new()
-            {
-                "Weekend",
-                "Night",
-                "Lewd",
-                "Costume",
-                "Sports",
-                "Bath",
-                "Camping",
-                "Home",
-                "Outfit 12",
-                "Outfit 13",
-                "Outfit 14",
-                "Outfit 15",
-                "Outfit 16",
-                "Outfit 17"
-            };
+        private static readonly List<string> outfitsList =
+        [
+            "Weekend",
+            "Night",
+            "Lewd",
+            "Costume",
+            "Sports",
+            "Bath",
+            "Camping",
+            "Home",
+            "Outfit 12",
+            "Outfit 13",
+            "Outfit 14",
+            "Outfit 15",
+            "Outfit 16",
+            "Outfit 17"
+        ];
 
         public override void Load()
         {
@@ -65,7 +66,7 @@ namespace SVS_MoreOutfits
             Log = base.Log;
 
             maxOutfits = Config.Bind("Outfits", "Set Outfit Amount", 8, new ConfigDescription("Set the Max amount of outfits for all characters. Any extra outfit above the default value (7) will not have conditions, in other words, NPCs will not use them", new AcceptableValueRange<int>(3, 17), new ConfigurationManagerAttributes { Order = 19 }));
-            
+
             changePCOutfit = Config.Bind("Outfits", "Change PC Outfits", false, new ConfigDescription("PC will change into custom outfits automatically", null, new ConfigurationManagerAttributes { Order = 18 }));
 
             weekendOutfit = Config.Bind("Outfits", "Use Weekend Outfit", true, new ConfigDescription("Characters will use their weekend Outfits durin Saturday and Sunday", null, new ConfigurationManagerAttributes { Order = 17 }));
@@ -80,7 +81,8 @@ namespace SVS_MoreOutfits
             costumePeriod = Config.Bind("Outfits Settings", "Set Costume Period", GamePeriod.Morning | GamePeriod.Midday | GamePeriod.Evening | GamePeriod.Night,
             new ConfigDescription("Set the Period when the costume will be use", null, new ConfigurationManagerAttributes { Order = 8 }));
 
-            patchedHooks = Harmony.CreateAndPatchAll(typeof(Hooks));
+            //patchedHooks =
+            Harmony.CreateAndPatchAll(typeof(Hooks));
         }
         public enum GameDay
         {
@@ -96,7 +98,7 @@ namespace SVS_MoreOutfits
             All = 8,
         }
 
-        [System.Flags]
+        [Flags]
         public enum GamePeriod
         {
             None = 0,
@@ -112,12 +114,12 @@ namespace SVS_MoreOutfits
         public static bool[] GetOptions()
         {
             bool[] options = [
-                changePCOutfit.Value, 
-                weekendOutfit.Value, 
-                nightOutfit.Value, 
+                changePCOutfit.Value,
+                weekendOutfit.Value,
+                nightOutfit.Value,
                 lewdOutfit.Value,
                 costumeOutfit.Value,
-                sportsOutfit.Value];            
+                sportsOutfit.Value];
             return options;
         }
 
@@ -129,33 +131,41 @@ namespace SVS_MoreOutfits
 
         public static ValueTuple<int, bool[]> GetCostumeDayAndPeriod()
         {
-            ValueTuple<int, bool[]> dayAndPeriod = new ValueTuple<int, bool[]>();
-            dayAndPeriod.Item1 = -1;
+            var dayAndPeriod = new ValueTuple<int, bool[]>(-1, [false, false, false, false]);
             switch (costumeDay.Value)
             {
-                case GameDay.None: dayAndPeriod.Item1 = -1;
+                case GameDay.None:
+                    dayAndPeriod.Item1 = -1;
                     break;
-                case GameDay.Monday: dayAndPeriod.Item1 = 0;
+                case GameDay.Monday:
+                    dayAndPeriod.Item1 = 0;
                     break;
-                case GameDay.Tuesday: dayAndPeriod.Item1 = 1;
+                case GameDay.Tuesday:
+                    dayAndPeriod.Item1 = 1;
                     break;
-                case GameDay.Wednesday: dayAndPeriod.Item1 = 2;
+                case GameDay.Wednesday:
+                    dayAndPeriod.Item1 = 2;
                     break;
-                case GameDay.Thursday: dayAndPeriod.Item1 = 3;
+                case GameDay.Thursday:
+                    dayAndPeriod.Item1 = 3;
                     break;
-                case GameDay.Friday: dayAndPeriod.Item1 = 4;
+                case GameDay.Friday:
+                    dayAndPeriod.Item1 = 4;
                     break;
-                case GameDay.Saturday: dayAndPeriod.Item1 = 5;
+                case GameDay.Saturday:
+                    dayAndPeriod.Item1 = 5;
                     break;
-                case GameDay.Sunday: dayAndPeriod.Item1 = 6;
+                case GameDay.Sunday:
+                    dayAndPeriod.Item1 = 6;
                     break;
-                case GameDay.Weekend: dayAndPeriod.Item1 = 7;
+                case GameDay.Weekend:
+                    dayAndPeriod.Item1 = 7;
                     break;
-                case GameDay.All: dayAndPeriod.Item1 = 8;
+                case GameDay.All:
+                    dayAndPeriod.Item1 = 8;
                     break;
             }
 
-            dayAndPeriod.Item2 = [false,false,false,false];
             if ((costumePeriod.Value & GamePeriod.Morning) != 0) dayAndPeriod.Item2[0] = true;
             if ((costumePeriod.Value & GamePeriod.Midday) != 0) dayAndPeriod.Item2[1] = true;
             if ((costumePeriod.Value & GamePeriod.Evening) != 0) dayAndPeriod.Item2[2] = true;
@@ -173,7 +183,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(CharacterCreation.HumanCustom), nameof(HumanCustom.Start))]
+            [HarmonyPatch(typeof(HumanCustom), nameof(HumanCustom.Start))]
             public static void CreateOutfitsSlotsMaker(HumanCustom __instance)
             {
                 if (maxOutfits.Value > 3) MoreOutfits.CreateNewOutfitIcons(outfitsList, maxOutfits.Value);
@@ -222,7 +232,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(SV.CoordeSelectScene.CoordeSelect), nameof(SV.CoordeSelectScene.CoordeSelect.SetCoordeTitle))]
+            [HarmonyPatch(typeof(CoordeSelect), nameof(CoordeSelect.SetCoordeTitle))]
             public static void CustomCoordTittle(CoordeSelect __instance, int type)
             {
                 if (type > 2)
@@ -239,12 +249,13 @@ namespace SVS_MoreOutfits
                 {
                     if (__instance._coordinateTypeNames.Count < 3)
                     {
-                        var names = new Il2CppStringArray(__instance._human.data.Coordinates.Count);
-
-                        //Create array for JP languaje.
-                        names[0] = "私服";
-                        names[1] = "役職服";
-                        names[2] = "水着";
+                        var names = new Il2CppStringArray(__instance._human.data.Coordinates.Count)
+                        {
+                            //Create array for JP languaje.
+                            [0] = "私服",
+                            [1] = "役職服",
+                            [2] = "水着"
+                        };
 
                         int number = 0;
                         for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
@@ -277,7 +288,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(CharacterCreation.UI.CoordinateCopyFace), nameof(CoordinateCopyFace.UpdateCustomUI))]
+            [HarmonyPatch(typeof(CoordinateCopyFace), nameof(CoordinateCopyFace.UpdateCustomUI))]
             public static void CoordCopyFace(CoordinateCopyFace __instance)
             {
                 if (__instance._human == null) return;
@@ -288,7 +299,7 @@ namespace SVS_MoreOutfits
                     for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
                     {
                         if (i < 3) continue;
-                        TMPro.TMP_Dropdown.OptionData newOption = new();
+                        TMP_Dropdown.OptionData newOption = new();
                         newOption.m_Text = outfitsList[number];
                         newOption.text = outfitsList[number];
                         __instance._ddDstCoordeType.TMP_Dropdown.options.Add(newOption);
@@ -299,7 +310,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(CharacterCreation.UI.CoordinateCopyBody), nameof(CoordinateCopyBody.UpdateCustomUI))]
+            [HarmonyPatch(typeof(CoordinateCopyBody), nameof(CoordinateCopyBody.UpdateCustomUI))]
             public static void CoordCopyBody(CoordinateCopyBody __instance)
             {
                 if (__instance._human == null) return;
@@ -310,7 +321,7 @@ namespace SVS_MoreOutfits
                     for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
                     {
                         if (i < 3) continue;
-                        TMPro.TMP_Dropdown.OptionData newOption = new();
+                        TMP_Dropdown.OptionData newOption = new();
                         newOption.m_Text = outfitsList[number];
                         newOption.text = outfitsList[number];
                         __instance._ddDstCoordeType.TMP_Dropdown.options.Add(newOption);
@@ -321,7 +332,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(CharacterCreation.UI.CoordinateCopyHair), nameof(CoordinateCopyHair.UpdateCustomUI))]
+            [HarmonyPatch(typeof(CoordinateCopyHair), nameof(CoordinateCopyHair.UpdateCustomUI))]
             public static void CoordCopyHair(CoordinateCopyHair __instance)
             {
                 if (__instance._human == null) return;
@@ -332,7 +343,7 @@ namespace SVS_MoreOutfits
                     for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
                     {
                         if (i < 3) continue;
-                        TMPro.TMP_Dropdown.OptionData newOption = new();
+                        TMP_Dropdown.OptionData newOption = new();
                         newOption.m_Text = outfitsList[number];
                         newOption.text = outfitsList[number];
                         __instance._ddDstCoordeType.TMP_Dropdown.options.Add(newOption);
@@ -344,7 +355,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(CharacterCreation.UI.CoordinateCopyClothes), nameof(CoordinateCopyClothes.UpdateCustomUI))]
+            [HarmonyPatch(typeof(CoordinateCopyClothes), nameof(CoordinateCopyClothes.UpdateCustomUI))]
             public static void CoordCopyClothes(CoordinateCopyClothes __instance)
             {
                 if (__instance._human == null) return;
@@ -355,7 +366,7 @@ namespace SVS_MoreOutfits
                     for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
                     {
                         if (i < 3) continue;
-                        TMPro.TMP_Dropdown.OptionData newOption = new();
+                        TMP_Dropdown.OptionData newOption = new();
                         newOption.m_Text = outfitsList[number];
                         newOption.text = outfitsList[number];
                         __instance._ddDstCoordeType.TMP_Dropdown.options.Add(newOption);
@@ -366,7 +377,7 @@ namespace SVS_MoreOutfits
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(CharacterCreation.UI.CoordinateCopyAccessory), nameof(CoordinateCopyAccessory.UpdateCustomUI))]
+            [HarmonyPatch(typeof(CoordinateCopyAccessory), nameof(CoordinateCopyAccessory.UpdateCustomUI))]
             public static void CoordCopyAccessory(CoordinateCopyAccessory __instance)
             {
                 if (__instance._human == null) return;
@@ -377,7 +388,7 @@ namespace SVS_MoreOutfits
                     for (int i = 0; i < __instance._human.data.Coordinates.Count; i++)
                     {
                         if (i < 3) continue;
-                        TMPro.TMP_Dropdown.OptionData newOption = new();
+                        TMP_Dropdown.OptionData newOption = new();
                         newOption.m_Text = outfitsList[number];
                         newOption.text = outfitsList[number];
                         __instance._ddDstCoordeType.TMP_Dropdown.options.Add(newOption);

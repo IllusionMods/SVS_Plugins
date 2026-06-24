@@ -1,4 +1,5 @@
-﻿using ADV;
+﻿using System;
+using ADV;
 using ADV.Commands.Game.LowChara;
 using BepInEx;
 using BepInEx.Configuration;
@@ -6,13 +7,14 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppSystem.Collections.Generic;
 using Manager;
 using SaveData;
 using SV;
 using SV.Chara;
 using SV.MyRoomScene;
+using SV.Talk;
 using SV.Title;
-using System;
 using UnityEngine;
 
 namespace SVS_CustomGameBalance
@@ -57,10 +59,10 @@ namespace SVS_CustomGameBalance
         private static ConfigEntry<bool> _removeActionLimit;
         //private static ConfigEntry<bool> _escapeVoiceFix;
         private static ConfigEntry<bool> _fortuneSuccessFix;
-        private static ConfigEntry<bool> increaseNightEvent;
-        private static ConfigEntry<bool> forceNightEvent;
+        //private static ConfigEntry<bool> increaseNightEvent;
+        //private static ConfigEntry<bool> forceNightEvent;
         private static ConfigEntry<bool> forceBreakUp;
-        private static ConfigEntry<bool> hugLovePointsSwitch;
+        //private static ConfigEntry<bool> hugLovePointsSwitch;
         //private static ConfigEntry<bool> sexSensor;
 
         private static ConfigEntry<int> _basePoint;
@@ -88,7 +90,7 @@ namespace SVS_CustomGameBalance
         private static ConfigEntry<float> _npcRunSpeed;
         private static ConfigEntry<float> _npcWalkSpeed;
         private static ConfigEntry<float> _lowestActionRate;
-        private static ConfigEntry<float> _NPCSexSpeed;
+        //private static ConfigEntry<float> _NPCSexSpeed;
 
         public static bool gameFixes = false;
         public static bool actionLowestRate = false;
@@ -120,7 +122,7 @@ namespace SVS_CustomGameBalance
             //_h3ReactionChance = Config.Bind("Interruption Manager", "Reduce public sex Interruptions by", 0, new ConfigDescription("Reduce the chance for all types of Interruptions", new AcceptableValueRange<int>(0, 99), new ConfigurationManagerAttributes { Order = 0 }));
 
             //Night Event
-            increaseNightEvent = Config.Bind("Night Event", "Increase Night Event Rate", true, new ConfigDescription("If enabled, the rate of the Night event will be increase. Note: Male characters can not visit you if you play as a female or male character (Illgames did not add events for them)", null, new ConfigurationManagerAttributes { Order = 10 }));
+            //increaseNightEvent = Config.Bind("Night Event", "Increase Night Event Rate", true, new ConfigDescription("If enabled, the rate of the Night event will be increase. Note: Male characters can not visit you if you play as a female or male character (Illgames did not add events for them)", null, new ConfigurationManagerAttributes { Order = 10 }));
             nightChance = Config.Bind("Night Event", "Normal Night Event Rate", 70, new ConfigDescription("Increase the rate of Normal Night Events. NOTE: The game still has a small chance of not triggering the event, so a value of 100 does not mean the event will always trigger", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { Order = 9 }));
             nightChanceH = Config.Bind("Night Event", "Sex Night Event Rate", 70, new ConfigDescription("Increase the rate of Sex Night Events. NOTE: The game still has a small chance of not triggering the event, so a value of 100 does not mean the event will always trigger", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { Order = 8 }));
 
@@ -171,7 +173,7 @@ namespace SVS_CustomGameBalance
             _actionLowestRatePCNPC = Config.Bind("Other Options", "Set minimum success rate for", CharaType.PC | CharaType.NPC,
             new ConfigDescription("Set the minimum success rate for PC, NPC or both", null, new ConfigurationManagerAttributes { Order = 9 }));
             _lowestActionRate = Config.Bind("Other Options", "Set Minimum Success Rate value", 0f, new ConfigDescription("Set the minimum success rate for an action (it will override action with 0 success rate)", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = true, Order = 8 }));
-            hugLovePointsSwitch = Config.Bind("Other Options", "Switch hug love to friend points", false, new ConfigDescription("If enabled, the hug action will give friend points instead of love", null, new ConfigurationManagerAttributes { Order = 7 }));
+            //hugLovePointsSwitch = Config.Bind("Other Options", "Switch hug love to friend points", false, new ConfigDescription("If enabled, the hug action will give friend points instead of love", null, new ConfigurationManagerAttributes { Order = 7 }));
 
             //Fortune
             _fortuneSuccessFix = Config.Bind("Fortune Manager", "Buff fortune 7", true, new ConfigDescription("In vanilla, this fortune barely has an impact in the game. Enabling this option will buff this fortune. Now alongside of improving the 3 options result, now it increases the probability of an interaction by 10 percent", null, new ConfigurationManagerAttributes { Order = 10 }));
@@ -198,7 +200,7 @@ namespace SVS_CustomGameBalance
             LowestVirtueOnly = 3,
         }
 
-        [System.Flags]
+        [Flags]
         public enum CharaType
         {
             None = 0,
@@ -206,7 +208,7 @@ namespace SVS_CustomGameBalance
             NPC = 1 << 1,
         }
 
-        [System.Flags]
+        [Flags]
         public enum NPCSex
         {
             None = 0,
@@ -230,8 +232,8 @@ namespace SVS_CustomGameBalance
 
         public static bool[] GetGameFixes()
         {
-            bool[] fixes = [_applyGameFixes.Value, 
-                            _bbqAnswerType.Value == HighVirtueBBQ.Accept, 
+            bool[] fixes = [_applyGameFixes.Value,
+                            _bbqAnswerType.Value == HighVirtueBBQ.Accept,
                             _applyAreYouDatingFix.Value];
             return fixes;
         }
@@ -270,7 +272,7 @@ namespace SVS_CustomGameBalance
 
         public static int[] GetNightChance()
         {
-            return [nightChance.Value,nightChanceH.Value];
+            return [nightChance.Value, nightChanceH.Value];
         }
         /// <summary>
         /// ToDo
@@ -299,9 +301,9 @@ namespace SVS_CustomGameBalance
         /// 24:Unknown! Fix NPC Escape voice not playing.
         /// 25:DONE! Fix PC while Following NPC. 
         /// 26:DONE! Remove Interaction Limit.
-        /// 27:Pending! Increse NPC sex Speed.  <- v1.5.7
+        /// 27:Pending! Increse NPC sex Speed.  - v1.5.7
         /// 28:DONE! Fix Fortune 7 Effect.
-        /// 29:DONE! Break Up action always 100%. <- v1.6.3
+        /// 29:DONE! Break Up action always 100%. - v1.6.3
         /// 30: Hug give friendship instead of love.
         /// 31: Day Counter.
         /// 32: Improved Night Event.
@@ -309,7 +311,7 @@ namespace SVS_CustomGameBalance
         internal static class Hooks
         {
             //static bool blackmail = false;
-            private static Il2CppSystem.Collections.Generic.Dictionary<int, GlobalListLoad.MoveAnimationPitch> npcSpeedDic = new();
+            private static readonly Dictionary<int, GlobalListLoad.MoveAnimationPitch> npcSpeedDic = new();
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(TitleScene), nameof(TitleScene.Start))]
@@ -319,7 +321,7 @@ namespace SVS_CustomGameBalance
                 {
                     foreach (var npc in GlobalListLoad.Instance.moveAnimSpeedNPCTable)
                     {
-                        GlobalListLoad.MoveAnimationPitch move = new();
+                        var move = new GlobalListLoad.MoveAnimationPitch();
                         move.runRate = npc.value.runRate;
                         move.speed_run = npc.Value.speed_run;
                         move.speed_walk = npc.Value.speed_walk;
@@ -369,9 +371,9 @@ namespace SVS_CustomGameBalance
                             var isNotFree = ADVManager._instance.IsHScene || ADVManager._instance.IsADV
                                         || (MyRoom._instance != null && MyRoom._instance.IsOpen());
                             if (!isNotFree) GameChara.Player.charasGameParam.isWithAction = true;
-                        } 
+                        }
                     }
-                }    
+                }
             }
 
             /*[HarmonyPostfix]
@@ -388,7 +390,7 @@ namespace SVS_CustomGameBalance
             }*/
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(SV.Talk.PCPassiveTalkTask), nameof(SV.Talk.PCPassiveTalkTask.UIActiveAndBaseEnd))]
+            [HarmonyPatch(typeof(PCPassiveTalkTask), nameof(PCPassiveTalkTask.UIActiveAndBaseEnd))]
             public static void SetPCInteractible()
             {
                 if (GameChara.Player.charasGameParam.isWithAction) GameChara.Player.charasGameParam.isWithAction = false;
@@ -402,10 +404,10 @@ namespace SVS_CustomGameBalance
                 {
                     if (_byEndPeriod.Value)
                     {
-                        var _tempKeyActor = HelperFunctions.FindMainActorInstanceMemory(__instance);
+                        var _tempKeyActor = __instance.FindMainActorInstanceMemory();
                         if (_tempKeyActor.Value != null)
                         {
-                            CustomGameBalance.CheaterEnhancer(_tempKeyActor.Value, _baseHateSubPoints.Value, _disablePCCheatEnhancer.Value, _byEndPeriod.Value);
+                            _tempKeyActor.Value.CheaterEnhancer(_baseHateSubPoints.Value, _disablePCCheatEnhancer.Value, _byEndPeriod.Value);
                         }
                         else Log.LogInfo($"Error: Actor is Null");
                     }
@@ -418,7 +420,7 @@ namespace SVS_CustomGameBalance
             {
                 if (_enableCheaterEnhancer.Value)
                 {
-                    if (!_byEndPeriod.Value) CustomGameBalance.CheaterEnhancer(_self, _baseHateSubPoints.Value, _disablePCCheatEnhancer.Value, _byEndPeriod.Value);
+                    if (!_byEndPeriod.Value) _self.CheaterEnhancer(_baseHateSubPoints.Value, _disablePCCheatEnhancer.Value, _byEndPeriod.Value);
                 }
 
                 /*Log.LogInfo($"-----------------------------------------");
@@ -434,7 +436,7 @@ namespace SVS_CustomGameBalance
                 Log.LogInfo($"Living: " + _self.charasGameParam._baseParameter_k__BackingField.Living);
                 Log.LogInfo($"JobPoint: " + _self.charasGameParam._baseParameter_k__BackingField.JobPoint);*/
 
-                if (_enableStatsReduction.Value) CustomGameBalance.EndOfDayStatsReduction(_self, _basePoint.Value, _pointAditive.Value, _disablePCReduction.Value);
+                if (_enableStatsReduction.Value) _self.EndOfDayStatsReduction(_basePoint.Value, _pointAditive.Value, _disablePCReduction.Value);
 
                 /*Log.LogInfo($"-----------------------------------------");
                 Log.LogInfo($"Stamina: " + _self.charasGameParam._baseParameter_k__BackingField.Stamina);
@@ -454,15 +456,15 @@ namespace SVS_CustomGameBalance
                     var _walkSpeed = GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_walk;
                     var _runSpeed = GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_run;
 
-                    if (_walkSpeed != _pcWalkSpeed.Value) GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_walk = (float)Math.Round(_pcWalkSpeed.Value,2);
-                    if (_runSpeed != _pcRunSpeed.Value) GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_run = (float)Math.Round(_pcRunSpeed.Value,2);
+                    if (_walkSpeed != _pcWalkSpeed.Value) GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_walk = (float)Math.Round(_pcWalkSpeed.Value, 2);
+                    if (_runSpeed != _pcRunSpeed.Value) GlobalListLoad.Instance.moveAnimSpeedPCTable[0].speed_run = (float)Math.Round(_pcRunSpeed.Value, 2);
                 }
-                else 
+                else
                 {
                     foreach (var npcspeed in npcSpeedDic)
                     {
-                        GlobalListLoad.Instance.moveAnimSpeedNPCTable[npcspeed.Key].speed_walk = (float)Math.Round(npcspeed.Value.speed_walk * _npcWalkSpeed.Value,2);
-                        GlobalListLoad.Instance.moveAnimSpeedNPCTable[npcspeed.Key].speed_run = (float)Math.Round(npcspeed.Value.speed_run * _npcRunSpeed.Value,2);
+                        GlobalListLoad.Instance.moveAnimSpeedNPCTable[npcspeed.Key].speed_walk = (float)Math.Round(npcspeed.Value.speed_walk * _npcWalkSpeed.Value, 2);
+                        GlobalListLoad.Instance.moveAnimSpeedNPCTable[npcspeed.Key].speed_run = (float)Math.Round(npcspeed.Value.speed_run * _npcRunSpeed.Value, 2);
                     }
                 }
             }
@@ -474,11 +476,12 @@ namespace SVS_CustomGameBalance
                 switch (_allowHugSkinship.Value)
                 {
                     case AllowHugging.None:
+                    default:
                         return __result;
 
                     case AllowHugging.AllCharacters:
                         if (_target.charaData.CommandNo == 32 || _target.charaData.CommandNo == 54) return false;
-                        break;
+                        return __result;
 
                     case AllowHugging.ExcludeSomeTraits:
                         if (_target.charaData.CommandNo == 32 || _target.charaData.CommandNo == 54)
@@ -486,16 +489,15 @@ namespace SVS_CustomGameBalance
                             if (_self.charaData.gameParameter.individuality.answer.Contains(10) || _self.charaData.gameParameter.individuality.answer.Contains(36)) return __result;
                             return false;
                         }
-                        break;
+                        return __result;
 
                     case AllowHugging.LowestVirtueOnly:
                         if (_target.charaData.CommandNo == 32 || _target.charaData.CommandNo == 54)
                         {
                             if (_self.charaData.gameParameter.lvChastity == 0) return false;
                         }
-                        break;
+                        return __result;
                 }
-                return __result;
             }
 
             /*[HarmonyPostfix]
@@ -557,18 +559,14 @@ namespace SVS_CustomGameBalance
                         switch (_command)
                         {
                             case 47:
-                                return;                       
                             case 48:
-                                return;
                             case 50:
-                                return;
                             case 51:
                                 return;
                         }
                         __instance._charaCtrl.AI.charaData.CommandNo = 35;
-                    } 
-                    return;
-                } 
+                    }
+                }
             }
 
             [HarmonyPostfix]
@@ -586,17 +584,17 @@ namespace SVS_CustomGameBalance
                             if (_ai.chaCtrl.sex == 0 && _ai1.chaCtrl.sex == 0 && _ai2.chaCtrl.sex == 0) return __result;
                             if (_ai.chaCtrl.sex == 1 && _ai1.chaCtrl.sex == 1 && _ai2.chaCtrl.sex == 1)
                             {
-                                if (_ai.chaCtrl.fileParam.isFutanari || _ai1.chaCtrl.fileParam.isFutanari || _ai2.chaCtrl.fileParam.isFutanari) return __result = 4;
+                                if (_ai.chaCtrl.fileParam.isFutanari || _ai1.chaCtrl.fileParam.isFutanari || _ai2.chaCtrl.fileParam.isFutanari) return 4;
                                 return __result;
                             }
                         }
-                        return __result = 4;
+                        return 4;
                     }
                 }
 
                 if (_enableReactionManager.Value)
                 {
-                    bool[] _affectChara = [false,false];
+                    bool[] _affectChara = [false, false];
                     if ((_interruptPCNPC.Value & CharaType.PC) != 0) _affectChara[0] = true;
                     if ((_interruptPCNPC.Value & CharaType.NPC) != 0) _affectChara[1] = true;
 
@@ -671,12 +669,12 @@ namespace SVS_CustomGameBalance
             [HarmonyPatch(typeof(CommandUI), nameof(CommandUI.ToStringProb))]
             public static string OverwriteProbability(string __result, int rate)
             {
-                if(_actionPorcentageDisplay.Value == DisplayPercentage.Hide) return __result = "";
-                if (_actionPorcentageDisplay.Value == DisplayPercentage.Real) return __result = rate.ToString() + "%";
+                if (_actionPorcentageDisplay.Value == DisplayPercentage.Hide) return "";
+                if (_actionPorcentageDisplay.Value == DisplayPercentage.Real) return rate + "%";
                 return __result;
             }
 
-            static bool[] fixes = [false, false];
+            private static bool[] fixes = [false, false];
             [HarmonyPriority(300)]
             [HarmonyPostfix]
             [HarmonyPatch(typeof(BaseAnswer), nameof(BaseAnswer.Judge))]
@@ -685,15 +683,15 @@ namespace SVS_CustomGameBalance
                 CustomGameBalance.NewAnswerRate(_ansInfo, _ynInfo, _commandID, _questionCount);
             }
 
-            private static AI _npc = null;
-            private static AI _npc2 = null;
-            private static AI _npc3 = null;
-            private static int tempMapID_1 = 0;
-            private static int tempMapID_2 = 0;
-            private static int tempMapID_3 = 0;
+            private static AI _npc;
+            private static AI _npc2;
+            private static AI _npc3;
+            private static int tempMapID_1;
+            private static int tempMapID_2;
+            private static int tempMapID_3;
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(ADV.Commands.Game.LowChara.LowPolyText), nameof(ADV.Commands.Game.LowChara.LowPolyText.Do))]
+            [HarmonyPatch(typeof(LowPolyText), nameof(LowPolyText.Do))]
             public static void RemoveNPCSkipPre(LowPolyText __instance)
             {
                 if (_doNotSkipNPC.Value)
@@ -704,7 +702,7 @@ namespace SVS_CustomGameBalance
 
                     if (_actor != null)
                     {
-                        _npc = SV.GameChara.FindCharaAI(_actor._chaCtrl_k__BackingField);
+                        _npc = GameChara.FindCharaAI(_actor._chaCtrl_k__BackingField);
                         if (_npc != null)
                         {
                             if (MapManager.Instance._mapID == _npc.BehaviourCtrl.nowMapID)
@@ -730,9 +728,9 @@ namespace SVS_CustomGameBalance
 
                     if (_actor2 != null)
                     {
-                        _npc2 = SV.GameChara.FindCharaAI(_actor2._chaCtrl_k__BackingField);
+                        _npc2 = GameChara.FindCharaAI(_actor2._chaCtrl_k__BackingField);
                         if (_npc2 != null)
-                        {                            
+                        {
                             //Log.LogInfo($"Voice Skip Pre Name: {_actor2.Name}");
                             //Log.LogInfo($"Voice Skip Pre: temp2:{tempMapID_2} npcMap:{_npc2.BehaviourCtrl.nowMapID} Current Map:{MapManager.Instance._mapID}");
                             tempMapID_2 = _npc2.BehaviourCtrl.nowMapID;
@@ -748,7 +746,7 @@ namespace SVS_CustomGameBalance
 
                     if (_actor3 != null)
                     {
-                        _npc3 = SV.GameChara.FindCharaAI(_actor3._chaCtrl_k__BackingField);
+                        _npc3 = GameChara.FindCharaAI(_actor3._chaCtrl_k__BackingField);
                         if (_npc3 != null)
                         {
                             //Log.LogInfo($"Voice Skip Pre: temp3:{tempMapID_3} npcMap:{_npc3.BehaviourCtrl.nowMapID} Current Map:{MapManager.Instance._mapID}");
@@ -766,10 +764,10 @@ namespace SVS_CustomGameBalance
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(ADV.FukidashiUICanvas), nameof(ADV.FukidashiUICanvas.Emit))]
+            [HarmonyPatch(typeof(FukidashiUICanvas), nameof(FukidashiUICanvas.Emit))]
             public static bool DisplayFukidashi()
             {
-                if (_doNotSkipNPC.Value) 
+                if (_doNotSkipNPC.Value)
                 {
                     if (tempMapID_1 > -1) return false;
                 }
@@ -777,7 +775,7 @@ namespace SVS_CustomGameBalance
             }
 
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(ADV.Commands.Game.LowChara.LowPolyText), nameof(ADV.Commands.Game.LowChara.LowPolyText.Do))]
+            [HarmonyPatch(typeof(LowPolyText), nameof(LowPolyText.Do))]
             public static void RemoveNPCSkipPost(LowPolyText __instance)
             {
                 if (_doNotSkipNPC.Value)
@@ -786,12 +784,12 @@ namespace SVS_CustomGameBalance
                     {
                         _npc.BehaviourCtrl.nowMapID = tempMapID_1;
                     }
-                    if (tempMapID_2 > -1 && _npc2 != null) 
-                    { 
+                    if (tempMapID_2 > -1 && _npc2 != null)
+                    {
                         _npc2.BehaviourCtrl.nowMapID = tempMapID_2;
                     }
-                    if (tempMapID_3 > -1 && _npc3 != null) 
-                    { 
+                    if (tempMapID_3 > -1 && _npc3 != null)
+                    {
                         _npc3.BehaviourCtrl.nowMapID = tempMapID_3;
                     }
                     //Log.LogInfo($"Voice Skip Post: TempMapID:{tempMapID_1} - {tempMapID_2} - {tempMapID_3}");
@@ -830,34 +828,34 @@ namespace SVS_CustomGameBalance
                 return __result;
             }
 
-           /*[HarmonyPrefix]
-            [HarmonyPatch(typeof(SimulationButtonAction), nameof(SimulationButtonAction.ShiftFromSimNightToRoomMorning))]
-            public static void NightCharactersPool(SimulationButtonAction __instance)
-            {
-                if (increaseNightEvent.Value) CustomGameBalance.SetNightCharacters();
-            }
+            /*[HarmonyPrefix]
+             [HarmonyPatch(typeof(SimulationButtonAction), nameof(SimulationButtonAction.ShiftFromSimNightToRoomMorning))]
+             public static void NightCharactersPool(SimulationButtonAction __instance)
+             {
+                 if (increaseNightEvent.Value) CustomGameBalance.SetNightCharacters();
+             }
 
-            [HarmonyPrefix]
-            [HarmonyWrapSafe]
-            [HarmonyPatch(typeof(SimulationButtonAction), nameof(SimulationButtonAction.ShiftFromSimNightToRoomMorningADV))]
-            static bool ShiftFromSimNightToRoomMorningPrefix(SimulationButtonAction __instance, ref UniTask __result)
-            {
-                if (forceNightEvent.Value)
-                {
-                    var charaAI = CustomGameFunctions.GetSelectedChara();
-                    if (charaAI != null) __result = __instance.SneakingVisitADV(charaAI);
-                }
-                return true;
-            }
-            
-            [HarmonyPrefix]
-            [HarmonyWrapSafe]
-            [HarmonyPatch(typeof(NightEventManager), nameof(NightEventManager.ConditionsJudge))]
-            public static void SetNightEventRate(NightEventManager __instance, Actor _src, Actor _target)
-            {
-                //Log.LogInfo($"Night Event Judge:{_src.charasGameParam.Index} - {_target.charasGameParam.Index}");
-                //if (increaseNightEvent.Value) CustomGameBalance.NightEventChance(__instance, _src);
-            }*/
+             [HarmonyPrefix]
+             [HarmonyWrapSafe]
+             [HarmonyPatch(typeof(SimulationButtonAction), nameof(SimulationButtonAction.ShiftFromSimNightToRoomMorningADV))]
+             static bool ShiftFromSimNightToRoomMorningPrefix(SimulationButtonAction __instance, ref UniTask __result)
+             {
+                 if (forceNightEvent.Value)
+                 {
+                     var charaAI = CustomGameFunctions.GetSelectedChara();
+                     if (charaAI != null) __result = __instance.SneakingVisitADV(charaAI);
+                 }
+                 return true;
+             }
+
+             [HarmonyPrefix]
+             [HarmonyWrapSafe]
+             [HarmonyPatch(typeof(NightEventManager), nameof(NightEventManager.ConditionsJudge))]
+             public static void SetNightEventRate(NightEventManager __instance, Actor _src, Actor _target)
+             {
+                 //Log.LogInfo($"Night Event Judge:{_src.charasGameParam.Index} - {_target.charasGameParam.Index}");
+                 //if (increaseNightEvent.Value) CustomGameBalance.NightEventChance(__instance, _src);
+             }*/
         }
     }
 }

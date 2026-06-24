@@ -1,23 +1,21 @@
-﻿using BepInEx.Unity.IL2CPP.Hook;
+﻿using System;
+using System.Runtime.InteropServices;
+using BepInEx.Unity.IL2CPP.Hook;
 using HarmonyLib;
 using Il2CppInterop.Common;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.Runtime;
 using SaveData;
 using SV;
-using SV.Chara;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace SVS_CustomGameBalance
 {
     internal class CGBNightEvent
     {
-        private static Dictionary<int, Actor> charaNightPoolDic = new Dictionary<int, Actor>();
+        //private static Dictionary<int, Actor> charaNightPoolDic = new();
         internal static unsafe class NightEventJudgeHook
         {
-            private static INativeDetour _detour;
+            //private static INativeDetour _detour;
             private static JudgeDelegate _orig;
 
             [UnmanagedFunctionPointer(CallingConvention.Winapi)]
@@ -25,7 +23,7 @@ namespace SVS_CustomGameBalance
 
             public static void Install()
             {
-                var method = AccessTools.Method(typeof(NightEventManager), "Judge", new[] { typeof(Actor), typeof(Actor) });
+                var method = AccessTools.Method(typeof(NightEventManager), "Judge", [typeof(Actor), typeof(Actor)]);
                 if (method == null)
                     throw new Exception("NightEventManager.Judge not found");
 
@@ -37,22 +35,16 @@ namespace SVS_CustomGameBalance
                 if (rawMethodInfoPtr == IntPtr.Zero)
                     throw new Exception($"NativeMethodInfoPtr for {method} is null");
 
-                unsafe
-                {
-                    var nativeMethodInfo =
-                        UnityVersionHandler.Wrap((Il2CppMethodInfo*)(void*)rawMethodInfoPtr)
-                        ?? throw new Exception($"Wrapped method info for {method} is invalid");
+                var nativeMethodInfo =
+                    UnityVersionHandler.Wrap((Il2CppMethodInfo*)(void*)rawMethodInfoPtr)
+                    ?? throw new Exception($"Wrapped method info for {method} is invalid"); // BUG? Struct is never null
 
-                    IntPtr methodPtr = nativeMethodInfo.MethodPointer;
+                IntPtr methodPtr = nativeMethodInfo.MethodPointer;
 
-                    CustomGameBalancePlugin.Log.LogInfo($"Judge methodPtr: 0x{methodPtr.ToInt64():X}");
+                CustomGameBalancePlugin.Log.LogInfo($"Judge methodPtr: 0x{methodPtr.ToInt64():X}");
 
-                    _detour = INativeDetour.CreateAndApply(
-                        methodPtr,
-                        (JudgeDelegate)JudgeDetour,
-                        out _orig
-                    );
-                }
+                //_detour =
+                INativeDetour.CreateAndApply(methodPtr, JudgeDetour, out _orig);
 
                 CustomGameBalancePlugin.Log.LogInfo($"Detour created. Orig delegate null? {_orig == null}");
             }
@@ -66,6 +58,7 @@ namespace SVS_CustomGameBalance
                 try
                 {
                     if (self != IntPtr.Zero)
+                        // BUG? Never used
                         instance = new Il2CppObjectBase(self).Cast<NightEventManager>();
 
                     if (active != IntPtr.Zero)
@@ -128,12 +121,12 @@ namespace SVS_CustomGameBalance
 
             public static void GetNightEventCharacters()
             {
-                
+
             }
 
             public static void NightEventChance(NightEventManager nightEvent, Actor chara)
             {
-                
+
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using ADV.Commands.Game.LowChara;
+﻿using System;
+using System.Collections.Generic;
+using ADV.Commands.Game.LowChara;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -8,11 +10,8 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SV;
 using SV.Chara;
 using SV.Talk;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
 namespace SVS_SixthSense
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -39,7 +38,7 @@ namespace SVS_SixthSense
         private static ConfigEntry<Color> textColor { get; set; }
         private static ConfigEntry<Color> underlayColor { get; set; }
 
-        private static GameObject CustomCanvasObject;
+        //private static GameObject CustomCanvasObject;
 
         public override void Load()
         {
@@ -47,8 +46,8 @@ namespace SVS_SixthSense
 
             var colorConverter = new TypeConverter
             {
-                ConvertToString = (obj, type) => ColorUtility.ToHtmlStringRGBA((Color)obj),
-                ConvertToObject = (str, type) =>
+                ConvertToString = (obj, _) => ColorUtility.ToHtmlStringRGBA((Color)obj),
+                ConvertToObject = (str, _) =>
                 {
                     if (!ColorUtility.TryParseHtmlString("#" + str.Trim('#', ' '), out var c))
                         throw new FormatException("Invalid color string, expected hex #RRGGBBAA");
@@ -83,7 +82,7 @@ namespace SVS_SixthSense
 
         public static bool[] GetSettings()
         {
-            return new bool [] { isAmbiguous.Value };
+            return [isAmbiguous.Value];
         }
 
         public static bool IsDebugLog()
@@ -92,9 +91,11 @@ namespace SVS_SixthSense
         }
         public static List<Color> GetTextColor()
         {
-            List<Color> colorsList = new List<Color>();
-            colorsList.Add(textColor.Value);
-            colorsList.Add(underlayColor.Value);
+            List<Color> colorsList =
+            [
+                textColor.Value,
+                underlayColor.Value
+            ];
             return colorsList;
         }
         internal static class Hooks
@@ -103,7 +104,7 @@ namespace SVS_SixthSense
             [HarmonyPatch(typeof(SimulationScene), nameof(SimulationScene.Start))]
             public static void CreateSixthSenseObject(SimulationScene __instance)
             {
-                if (!CustomCanvasObject) SixthSense.MakeCanvas(SceneManager.GetActiveScene(), CustomCanvasObject, __instance);
+                SixthSense.MakeCanvas(SceneManager.GetActiveScene(), __instance);
                 SixthSense.CreateCharaMoodImage(__instance);
             }
 
@@ -114,11 +115,11 @@ namespace SVS_SixthSense
                 SixthSense.CreateCharaMoodImageInADV(__instance);
             }
 
-            static bool startCounter = false;
-            static float counter = 0;
-            static bool isCharaName = false;
-            static string currentName = "";
-            static bool isMoodVisible = true;
+            private static bool startCounter;
+            private static float counter;
+            private static bool isCharaName;
+            private static string currentName = "";
+            private static bool isMoodVisible = true;
             [HarmonyPostfix]
             [HarmonyPatch(typeof(SimulationScene), nameof(SimulationScene.Update))]
             public static void HideCounter(SimulationScene __instance)

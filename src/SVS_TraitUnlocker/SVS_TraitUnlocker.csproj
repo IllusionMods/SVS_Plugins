@@ -4,5 +4,7 @@
 		<Version>1.0.2</Version>
 		<!-- Sets the 'File description' field on the dll file -->
 		<AssemblyTitle>Unlocks the trait limit in the Chara Maker</AssemblyTitle>
+
+		<RootNamespace>TraitUnlocker</RootNamespace>
 	</PropertyGroup>
 </Project>
