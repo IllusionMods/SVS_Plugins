@@ -5,4 +5,8 @@
 		<!-- Sets the 'File description' field on the dll file -->
 		<AssemblyTitle>Precisely set how many points the characters gain from interactions</AssemblyTitle>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IllusionLibs.XUnity.AutoTranslator.Plugin.Core.IL2CPP" Version="5.4.0" />
+	</ItemGroup>
 </Project>

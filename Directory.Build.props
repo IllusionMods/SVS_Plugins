@@ -12,7 +12,7 @@
 		<OutputPath>..\..\bin\build\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
-		<ImplicitUsings>enable</ImplicitUsings>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<LangVersion>12</LangVersion>
 
 		<TargetFramework>net6.0</TargetFramework>
