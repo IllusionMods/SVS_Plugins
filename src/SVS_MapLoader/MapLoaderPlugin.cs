@@ -8,12 +8,11 @@ using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Manager;
 using SaveData;
+using SemanticVersioning;
 using SV;
 using SV.EntryScene;
 using SV.MyRoomScene;
 using SV.Title;
-using SVS_MapLoader;
-
 namespace MapLoader
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -29,14 +28,14 @@ namespace MapLoader
 
         private static ConfigEntry<bool> _useCustomBGM;
         private static ConfigEntry<bool> _randomTittleMap;
-        private static ConfigEntry<bool> _SetNewStartingLocation;
-        private static ConfigEntry<bool> _SetNewChangingClothesMaps;
+        //private static ConfigEntry<bool> _SetNewStartingLocation;
+        //private static ConfigEntry<bool> _SetNewChangingClothesMaps;
         private static ConfigEntry<bool> jobInteractableArea;
-        private static ConfigEntry<bool> jobCustomLogic;
+        //private static ConfigEntry<bool> jobCustomLogic;
 
         private static ConfigEntry<bool> enableLog;
 
-        private static bool _customBGMLoaded = false;
+        //private static bool _customBGMLoaded = false;
         public override void Load()
         {
             Log = base.Log;
@@ -57,14 +56,14 @@ namespace MapLoader
 
         public static bool GetMoreOutfitsPlugin(bool showWarning)
         {
-            if (IL2CPPChainloader.Instance.Plugins.ContainsKey("SVS_MoreOutfits"))
+            if (IL2CPPChainloader.Instance.Plugins.TryGetValue("SVS_MoreOutfits", out var moreOutfits))
             {
-                var version = IL2CPPChainloader.Instance.Plugins["SVS_MoreOutfits"].Metadata.Version;
-                var vNew = new SemanticVersioning.Version("1.2.0");
+                var version = moreOutfits.Metadata.Version;
+                var vNew = new Version("1.2.0");
                 int result = version.CompareTo(vNew);
                 if (result < 0 && showWarning)
                 {
-                    Log.Log(BepInEx.Logging.LogLevel.Message,"MapLoader dependency: Old SVS_MoreOutfits detected, please update to v1.2.0 or latest");
+                    Log.Log(LogLevel.Message, "MapLoader dependency: Old SVS_MoreOutfits detected, please update to v1.2.0 or latest");
                     return false;
                 }
                 return true;
@@ -90,8 +89,8 @@ namespace MapLoader
         }
         internal static class Hooks
         {
-            static int _previousMap = 0;
-            static bool restoreBGM = false; //Used on ChangeBMGDependingOnMap()
+            //private static int _previousMap = 0;
+            //private static bool restoreBGM = false; //Used on ChangeBMGDependingOnMap()
 
             [HarmonyPrefix]
             [HarmonyPatch(typeof(TitleScene), nameof(TitleScene.Start))]
@@ -119,7 +118,7 @@ namespace MapLoader
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(SV.MyRoomScene.ImageSprite), nameof(ImageSprite.Set))]
+            [HarmonyPatch(typeof(ImageSprite), nameof(ImageSprite.Set))]
             public static void AddCustomJobIconsOnProfile(ImageSprite __instance)
             {
                 if (__instance._sprites.Count != GlobalListLoad.Instance.jobNameTable.Count)
@@ -143,7 +142,7 @@ namespace MapLoader
                 if (!GlobalListLoad.Instance.jobNameTable.ContainsKey(__instance.Info.Job))
                 {
                     Log.Log(LogLevel.Message, "Invalid Job ID for Character: " + __instance.Info.Name + " Missing mods or files could be the cause.");
-                    Log.LogInfo($"Invalid Job ID for Character: " + __instance.Info.FileName);
+                    Log.LogInfo("Invalid Job ID for Character: " + __instance.Info.FileName);
                 }
             }
 
@@ -197,7 +196,7 @@ namespace MapLoader
             {
                 if (__result > 16)
                 {
-                    __result = MapLoader.CheckChangingRoomSex(_actor, __result);                   
+                    __result = MapLoader.CheckChangingRoomSex(_actor, __result);
                 }
                 return __result;
             }
@@ -208,12 +207,12 @@ namespace MapLoader
             {
                 if (__result)
                 {
-                    _ansInfo = MapLoader.ActionSuccessRate(_ansInfo, _ynInfo, _commandID);
+                    MapLoader.ActionSuccessRate(_ansInfo, _ynInfo, _commandID);
                 }
             }
 
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(ADV.Setup), nameof(ADV.Setup.Open))]
+            [HarmonyPatch(typeof(Setup), nameof(Setup.Open))]
             public static void CustomJobADVLoader(OpenData openData)
             {
                 MapLoader.CustomJobADV(openData);

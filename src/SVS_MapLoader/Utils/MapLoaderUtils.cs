@@ -1,10 +1,8 @@
 ﻿using ADV;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Manager;
-using SV;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace MapLoader
 {
@@ -24,13 +22,14 @@ namespace MapLoader
                     return 2;
                 case SimulationManager.SimulationMode.SimNight:
                     return 3;
+                default:
+                    return -1;
             }
-            return -1;
         }
 
         public static string GetWeekDay()
         {
-            int weekDay = Manager.Game.saveData.Week;
+            int weekDay = Game.saveData.Week;
             string day = "Monday";
             switch (weekDay)
             {
@@ -58,21 +57,21 @@ namespace MapLoader
             }
             return day;
         }
-        public static void InsertJobADV(OpenData openData, Dictionary<string,List<MapLoaderParam.JobADV>> jobsADVs)
+        public static void InsertJobADV(OpenData openData, Dictionary<string, List<MapLoaderParam.JobADV>> jobsADVs)
         {
             if (openData == null || jobsADVs.Count == 0) return;
 
-            Il2CppReferenceArray<ScenarioCommand> scenarioData = new Il2CppReferenceArray<ScenarioCommand>(0);
-            Il2CppReferenceArray<ScenarioCommand> tempScenario = new Il2CppReferenceArray<ScenarioCommand>(0);
+            Il2CppReferenceArray<ScenarioCommand> scenarioData;
+            Il2CppReferenceArray<ScenarioCommand> tempScenario;
 
             int jobsNum = 5;
-            int scenarioLenght = 0;
-            int index = 0;
-            int newJobsIndex = 0;
-            int pos = 0;
-            int maxLenght = 0;
+            int scenarioLenght;
+            int index;
+            int newJobsIndex;
+            int pos;
+            int maxLenght;
             int startAdding = openData._data._list.Count - 3;
-            
+
             int jobsIndex = 0;
             foreach (var sce in openData._data._list)
             {
@@ -86,23 +85,25 @@ namespace MapLoader
             switch (openData.Asset)
             {
                 case "s_86":
-                    if (!jobsADVs.ContainsKey("s_86"))
+                    if (!jobsADVs.TryGetValue("s_86", out var s86JobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV s_86 not found");
                         break;
-                    } 
-                    if (jobsADVs["s_86"].Count == 0) break;
+                    }
+                    if (s86JobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["s_86"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "PC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += s86JobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "PC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["s_86"])
+                    foreach (var scenario in s86JobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -116,17 +117,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["s_86"])
+                    foreach (var jobAdv in s86JobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -145,37 +148,47 @@ namespace MapLoader
                     {
                         if (i > (startAdding)) //109
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
                     tempScenario[maxLenght - 2].Hash = tempScenario[maxLenght - 2].GetHashCode();
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
                     //tempScenario[maxLenght - 1]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(0);
                     tempScenario[maxLenght - 1].Hash = tempScenario[maxLenght - 1].GetHashCode();
 
@@ -183,23 +196,25 @@ namespace MapLoader
                     break;
 
                 case "a_25_1":
-                    if (!jobsADVs.ContainsKey("a_25_1"))
+                    if (!jobsADVs.TryGetValue("a_25_1", out var a25JobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV a_25_1 not found");
                         break;
                     }
-                    if (jobsADVs["a_25_1"].Count == 0) break;
+                    if (a25JobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["a_25_1"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "PC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += a25JobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "PC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["a_25_1"])
+                    foreach (var scenario in a25JobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -213,17 +228,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["a_25_1"])
+                    foreach (var jobAdv in a25JobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -242,59 +259,71 @@ namespace MapLoader
                     {
                         if (i > startAdding)
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
 
                     openData._data._list = tempScenario;
 
                     break;
 
                 case "p_25_1":
-                    if (!jobsADVs.ContainsKey("p_25_1"))
+                    if (!jobsADVs.TryGetValue("p_25_1", out var p25JobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV p_25_1 not found");
                         break;
                     }
-                    if (jobsADVs["p_25_1"].Count == 0) break;
+                    if (p25JobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["p_25_1"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "NPC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += p25JobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "NPC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["p_25_1"])
+                    foreach (var scenario in p25JobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -308,17 +337,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["p_25_1"])
+                    foreach (var jobAdv in p25JobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -337,59 +368,71 @@ namespace MapLoader
                     {
                         if (i > startAdding) //124
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
 
                     openData._data._list = tempScenario;
 
                     break;
 
                 case "a_43_1":
-                    if (!jobsADVs.ContainsKey("a_43_1"))
+                    if (!jobsADVs.TryGetValue("a_43_1", out var a43JobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV a_43_1 not found");
                         break;
                     }
-                    if (jobsADVs["a_43_1"].Count == 0) break;
+                    if (a43JobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["a_43_1"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "PC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += a43JobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "PC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["a_43_1"])
+                    foreach (var scenario in a43JobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -403,17 +446,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["a_43_1"])
+                    foreach (var jobAdv in a43JobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -432,57 +477,69 @@ namespace MapLoader
                     {
                         if (i > startAdding) //342
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
 
                     openData._data._list = tempScenario;
                     break;
                 case "p_43_1":
-                    if (!jobsADVs.ContainsKey("p_43_1"))
+                    if (!jobsADVs.TryGetValue("p_43_1", out var p43JobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV p_43_1 not found");
                         break;
                     }
-                    if (jobsADVs["p_43_1"].Count == 0) break;
+                    if (p43JobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["p_43_1"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "NPC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += p43JobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "NPC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["p_43_1"])
+                    foreach (var scenario in p43JobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -496,17 +553,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["p_43_1"])
+                    foreach (var jobAdv in p43JobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -525,57 +584,69 @@ namespace MapLoader
                     {
                         if (i > startAdding)
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
 
                     openData._data._list = tempScenario;
                     break;
                 case "timechange":
-                    if (!jobsADVs.ContainsKey("timechange"))
+                    if (!jobsADVs.TryGetValue("timechange", out var timechangeJobsAdv))
                     {
                         MapLoaderPlugin.Log.LogInfo("ADV timechange not found");
                         break;
                     }
-                    if (jobsADVs["timechange"].Count == 0) break;
+                    if (timechangeJobsAdv.Count == 0) break;
 
-                    jobsNum += jobsADVs["timechange"].Count;
-                    openData._data._list[jobsIndex]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(jobsNum);
-                    openData._data._list[jobsIndex]._args[0] = "PC_Job";
-                    openData._data._list[jobsIndex]._args[1] = "0,職なし";
-                    openData._data._list[jobsIndex]._args[2] = "1,ビーチ監視員";
-                    openData._data._list[jobsIndex]._args[3] = "2,カフェ店員";
-                    openData._data._list[jobsIndex]._args[4] = "3,巫女・男巫";
+                    jobsNum += timechangeJobsAdv.Count;
+                    openData._data._list[jobsIndex]._args = new Il2CppStringArray(jobsNum)
+                    {
+                        [0] = "PC_Job",
+                        [1] = "0,職なし",
+                        [2] = "1,ビーチ監視員",
+                        [3] = "2,カフェ店員",
+                        [4] = "3,巫女・男巫"
+                    };
 
                     scenarioLenght = 0;
-                    foreach (var scenario in jobsADVs["timechange"])
+                    foreach (var scenario in timechangeJobsAdv)
                     {
                         scenarioLenght += scenario.ScenarioParams.Count;
                     }
@@ -589,17 +660,19 @@ namespace MapLoader
 
                     index = 0;
                     newJobsIndex = 5;
-                    foreach (var jobAdv in jobsADVs["timechange"])
+                    foreach (var jobAdv in timechangeJobsAdv)
                     {
                         openData._data._list[jobsIndex]._args[newJobsIndex] = jobAdv.JobNameID;
 
                         foreach (var scenarios in jobAdv.ScenarioParams)
                         {
-                            scenarioData[index] = new ScenarioCommand();
-                            scenarioData[index]._version = scenarios.Version;
-                            scenarioData[index]._multi = scenarios.Multi;
-                            scenarioData[index]._command = (Command)Enum.Parse(typeof(Command), scenarios.Command);
-                            scenarioData[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(scenarios.Args.Length);
+                            scenarioData[index] = new ScenarioCommand
+                            {
+                                _version = scenarios.Version,
+                                _multi = scenarios.Multi,
+                                _command = (Command)Enum.Parse(typeof(Command), scenarios.Command),
+                                _args = new Il2CppStringArray(scenarios.Args.Length)
+                            };
                             for (int i = 0; i < scenarios.Args.Length; i++)
                             {
                                 scenarioData[index]._args[i] = scenarios.Args[i];
@@ -618,44 +691,54 @@ namespace MapLoader
                     {
                         if (i > startAdding)
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = scenarioData[pos]._version;
-                            tempScenario[i]._multi = scenarioData[pos]._multi;
-                            tempScenario[i]._command = scenarioData[pos]._command;
-                            tempScenario[i]._args = scenarioData[pos]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = scenarioData[pos]._version,
+                                _multi = scenarioData[pos]._multi,
+                                _command = scenarioData[pos]._command,
+                                _args = scenarioData[pos]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                             pos++;
                         }
                         else
                         {
-                            tempScenario[i] = new ScenarioCommand();
-                            tempScenario[i]._version = openData._data._list[i]._version;
-                            tempScenario[i]._multi = openData._data._list[i]._multi;
-                            tempScenario[i]._command = openData._data._list[i]._command;
-                            tempScenario[i]._args = openData._data._list[i]._args;
+                            tempScenario[i] = new ScenarioCommand
+                            {
+                                _version = openData._data._list[i]._version,
+                                _multi = openData._data._list[i]._multi,
+                                _command = openData._data._list[i]._command,
+                                _args = openData._data._list[i]._args
+                            };
                             tempScenario[i].Hash = tempScenario[i].GetHashCode();
                         }
                     }
 
-                    tempScenario[maxLenght - 2] = new ScenarioCommand();
-                    tempScenario[maxLenght - 2]._version = 0;
-                    tempScenario[maxLenght - 2]._multi = false;
-                    tempScenario[maxLenght - 2]._command = Command.Tag;
-                    tempScenario[maxLenght - 2]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(1);
-                    tempScenario[maxLenght - 2]._args[0] = "END";
+                    tempScenario[maxLenght - 2] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Tag,
+                        _args = new Il2CppStringArray(1)
+                        {
+                            [0] = "END"
+                        }
+                    };
 
-                    tempScenario[maxLenght - 1] = new ScenarioCommand();
-                    tempScenario[maxLenght - 1]._version = 0;
-                    tempScenario[maxLenght - 1]._multi = false;
-                    tempScenario[maxLenght - 1]._command = Command.Close;
+                    tempScenario[maxLenght - 1] = new ScenarioCommand
+                    {
+                        _version = 0,
+                        _multi = false,
+                        _command = Command.Close
+                    };
 
                     openData._data._list = tempScenario;
                     break;
             }
-        }      
-        public static void ThirdPOV()
-        {
-
         }
+        //public static void ThirdPOV()
+        //{
+        //
+        //}
     }
 }

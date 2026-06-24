@@ -7,12 +7,12 @@ namespace SVS_MoreOutfits
 {
     internal class ResourcesLoader
     {
-        public static Texture2D LoadSprite(int Outfit, int type)
+        public static Texture2D LoadSprite(int outfit, int type)
         {
-            Assembly moreoutfits = Assembly.GetExecutingAssembly();
-            string[] resourceOutfits = new string[3];
+            //Assembly moreoutfits = Assembly.GetExecutingAssembly();
+            string[] resourceOutfits;
 
-            switch (Outfit)
+            switch (outfit)
             {
                 case 0://Weekend
                     resourceOutfits = [
@@ -78,7 +78,7 @@ namespace SVS_MoreOutfits
                     break;
             }
 
-            Texture2D tex = new Texture2D(2, 2, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB,1, TextureCreationFlags.None);
+            Texture2D tex = new Texture2D(2, 2, GraphicsFormat.R8G8B8A8_SRGB,1, TextureCreationFlags.None);
 
             byte[] embeded = GetPngResourceAsByteArray(resourceOutfits[type]);
             if (embeded.Length > 0)
@@ -92,27 +92,26 @@ namespace SVS_MoreOutfits
         }
         public static Texture2D LoadPNG(string filePath, int type)
         {
-            Texture2D tex = new Texture2D(2, 2); ;
-            byte[] fileData;
+            var tex = new Texture2D(2, 2);
 
             string spritePath = null;
 
             switch (type)
             {
                 case 0:
-                    spritePath = System.IO.Path.Combine(filePath, "default.png");
+                    spritePath = Path.Combine(filePath, "default.png");
                     break;
                 case 1:
-                    spritePath = System.IO.Path.Combine(filePath, "hovered.png");
+                    spritePath = Path.Combine(filePath, "hovered.png");
                     break;
                 case 2:
-                    spritePath = System.IO.Path.Combine(filePath, "selected.png");
+                    spritePath = Path.Combine(filePath, "selected.png");
                     break;
             }
 
             if (File.Exists(spritePath))
             {
-                fileData = File.ReadAllBytes(spritePath);
+                var fileData = File.ReadAllBytes(spritePath);
                 tex.LoadImage(fileData);
                 tex.filterMode = FilterMode.Bilinear;
                 tex.Compress(true);

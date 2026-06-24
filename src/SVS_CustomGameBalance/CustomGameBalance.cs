@@ -1,32 +1,32 @@
-﻿using ADV;
+﻿using System;
+using BepInEx.Logging;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppSystem.Collections.Generic;
 using Manager;
 using SaveData;
 using SV;
 using SV.Chara;
 using SV.MyRoomScene;
-using System;
-using System.Collections.Generic;
 
 namespace SVS_CustomGameBalance
 {
     internal static class CustomGameBalance
     {
-        private static System.Random _rnd = new System.Random();
+        private static readonly Random _rnd = new();
 
-        private static Il2CppSystem.Collections.Generic.Dictionary<int, AnswerBaseDataParam> nightTable = new Il2CppSystem.Collections.Generic.Dictionary<int, AnswerBaseDataParam>();
-        private static List<AI> charas = new List<AI>();
-        private static AI selectedAI = new AI();
+        private static readonly Dictionary<int, AnswerBaseDataParam> nightTable = new();
+        private static readonly System.Collections.Generic.List<AI> charas = new();
+        private static AI selectedAI = new();
 
-        private static bool _isPCDisable = false;
-        private static bool _onPeriodEnd = false;
+        private static bool _isPCDisable;
+        //private static bool _onPeriodEnd = false;
 
-        private static int _Conversation = 0;
-        private static int _Living = 0;
-        private static int _Stamina = 0;
-        private static int _Study = 0;
+        private static int _Conversation;
+        private static int _Living;
+        private static int _Stamina;
+        private static int _Study;
         //private static int _JobPoint = 0;
-        private static int _tempValue = 0;
+        private static int _tempValue;
         private static int nightType = -1;
         private static int selectedCharaID = -1;
         private static float _aditiveMod = 1f;
@@ -42,20 +42,20 @@ namespace SVS_CustomGameBalance
                     SimulationManager.Instance?.UISimCtrl.SetVisibleButton(false);
                     if (MapManager.Instance != null && MapManager.Instance.objMapMoveUICanvas.active) MapManager.Instance.objMapMoveUICanvas.active = false;
                     SV.Sound.Play(SystemSE.ok);
-                    CustomGameBalancePlugin.Log.Log(BepInEx.Logging.LogLevel.Message, $"PC Control: Auto");
+                    CustomGameBalancePlugin.Log.Log(LogLevel.Message, $"PC Control: Auto");
                 }
                 else
                 {
                     player.BehaviourCtrl.isThinking = false;
                     SimulationManager.Instance?.UISimCtrl.SetVisibleButton(true);
-                    if (MapManager.Instance != null && MapManager.Instance.objMapMoveUICanvas.active == false) MapManager.Instance.objMapMoveUICanvas.active = true;
+                    if (MapManager.Instance != null && !MapManager.Instance.objMapMoveUICanvas.active) MapManager.Instance.objMapMoveUICanvas.active = true;
                     SV.Sound.Play(SystemSE.ok);
-                    CustomGameBalancePlugin.Log.Log(BepInEx.Logging.LogLevel.Message, $"PC Control: Manual");
+                    CustomGameBalancePlugin.Log.Log(LogLevel.Message, $"PC Control: Manual");
                 }
             }
             else
             {
-                if (MyRoom._instance != null && MyRoom._instance.IsOpen()) CustomGameBalancePlugin.Log.Log(BepInEx.Logging.LogLevel.Message, $"Leave your room to set Auto PC");
+                if (MyRoom._instance != null && MyRoom._instance.IsOpen()) CustomGameBalancePlugin.Log.Log(LogLevel.Message, $"Leave your room to set Auto PC");
             }
         }
                
@@ -87,7 +87,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvPhysical: Case 0 " + _aditiveMod);
                             if (_Stamina > 200)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 4))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 4))));
                                 _Stamina = _Stamina - _rnd.Next(1, _tempValue);
                                 if (_Stamina < 0) _Stamina = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Stamina = _Stamina;
@@ -106,7 +106,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvPhysical: Case 1");
                             if (_Stamina > 400)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 3))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 3))));
                                 _Stamina = _Stamina - _rnd.Next(1, _tempValue);
                                 if (_Stamina < 0) _Stamina = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Stamina = _Stamina;
@@ -125,7 +125,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvPhysical: Case 2");
                             if (_Stamina > 600)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 2))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 2))));
                                 _Stamina = _Stamina - _rnd.Next(1, _tempValue);
                                 if (_Stamina < 0) _Stamina = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Stamina = _Stamina;
@@ -144,7 +144,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvPhysical: Case 3" + _aditiveMod);
                             if (_Stamina > 800)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + _aditiveMod)));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + _aditiveMod)));
                                 _Stamina = _Stamina - _rnd.Next(1, _tempValue);
                                 if (_Stamina < 0) _Stamina = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Stamina = _Stamina;
@@ -175,7 +175,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvTalk: Case 0");
                             if (_Conversation > 200)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 4))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 4))));
                                 _Conversation = _Conversation - _rnd.Next(1, _tempValue);
                                 if (_Conversation < 0) _Conversation = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Conversation = _Conversation;
@@ -194,7 +194,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvTalk: Case 1");
                             if (_Conversation > 400)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 3))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 3))));
                                 _Conversation = _Conversation - _rnd.Next(1, _tempValue);
                                 if (_Conversation < 0) _Conversation = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Conversation = _Conversation;
@@ -214,7 +214,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvTalk: Case 2");
                             if (_Conversation > 600)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 2))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 2))));
                                 _Conversation = _Conversation - _rnd.Next(1, _tempValue);
                                 if (_Conversation < 0) _Conversation = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Conversation = _Conversation;
@@ -234,7 +234,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvTalk: Case 3");
                             if (_Conversation > 800)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + _aditiveMod)));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + _aditiveMod)));
 
                                 _Conversation = _Conversation - _rnd.Next(1, _tempValue);
                                 if (_Conversation < 0) _Conversation = 0;
@@ -266,7 +266,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvStudy: Case 0");
                             if (_Study > 200)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 4))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 4))));
                                 _Study = _Study - _rnd.Next(1, _tempValue);
                                 if (_Study < 0) _Study = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Study = _Study;
@@ -287,7 +287,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvStudy: Case 1");
                             if (_Study > 400)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 3))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 3))));
                                 _Study = _Study - _rnd.Next(1, _tempValue);
                                 if (_Study < 0) _Study = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Study = _Study;
@@ -306,7 +306,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvStudy: Case 2");
                             if (_Study > 600)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 2))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 2))));
                                 _Study = _Study - _rnd.Next(1, _tempValue);
                                 if (_Study < 0) _Study = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Study = _Study;
@@ -325,7 +325,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvStudy: Case 3");
                             if (_Study > 800)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + _aditiveMod)));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + _aditiveMod)));
                                 _Study = _Study - _rnd.Next(1, _tempValue);
                                 if (_Study < 0) _Study = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Study = _Study;
@@ -356,7 +356,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvLiving: Case 0");
                             if (_Living > 200)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 4))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 4))));
                                 _Living = _Living - _rnd.Next(1, _tempValue);
                                 if (_Living < 0) _Living = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Living = _Living;
@@ -376,7 +376,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvLiving: Case 1");
                             if (_Living > 400)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 3))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 3))));
                                 _Living = _Living - _rnd.Next(1, _tempValue);
                                 if (_Living < 0) _Living = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Living = _Living;
@@ -395,7 +395,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvLiving: Case 2");
                             if (_Living > 600)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + (_aditiveMod * 2))));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + (_aditiveMod * 2))));
                                 _Living = _Living - _rnd.Next(1, _tempValue);
                                 if (_Living < 0) _Living = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Living = _Living;
@@ -415,7 +415,7 @@ namespace SVS_CustomGameBalance
                             //Log.LogInfo($"LvLiving: Case 3");
                             if (_Living > 800)
                             {
-                                _tempValue = (int)Math.Round(((float)_basePoint * (1 + _aditiveMod)));
+                                _tempValue = (int)Math.Round((_basePoint * (1 + _aditiveMod)));
                                 _Living = _Living - _rnd.Next(1, _tempValue);
                                 if (_Living < 0) _Living = 0;
                                 _self.charasGameParam._baseParameter_k__BackingField.Living = _Living;
@@ -637,18 +637,17 @@ namespace SVS_CustomGameBalance
         public static int ReactionChance(AI _ai, AI _ai1, AI _ai2, int no, int reactionNo, int[] _chances, bool[] _charaType)
         {
             if (_ai == null) return reactionNo;
-            ///<summary>
-            /// ActionNo:
-            /// 0  : None
-            /// 1  : React to H
-            /// 2  : React Masturbation?
-            /// 5  : Fight
-            /// 6  : Skinship
-            /// 7  : Normal Interruption
-            /// 8  : Losing H Contest
-            /// 9  : Changing Room?
-            /// 10 : H again 3P?
-            ///</summary> 
+            
+            // ActionNo:
+            // 0  : None
+            // 1  : React to H
+            // 2  : React Masturbation?
+            // 5  : Fight
+            // 6  : Skinship
+            // 7  : Normal Interruption
+            // 8  : Losing H Contest
+            // 9  : Changing Room?
+            // 10 : H again 3P?
 
             if (reactionNo == -1) return -1;
             int _reactionValue = reactionNo;
@@ -747,7 +746,7 @@ namespace SVS_CustomGameBalance
             if (yesNoInfo.active == null || yesNoInfo.passive == null) return;
             var isGameFixes = CustomGameBalancePlugin.GetGameFixes();
             var isNewLowestRate = CustomGameBalancePlugin.GetActionLowestRateEnable();
-            var isForceActions = CustomGameBalancePlugin.GetForceActions();
+            //var isForceActions = CustomGameBalancePlugin.GetForceActions();
 
             if (isGameFixes[0]) CGBFixes.FixOnAnswerRate(_oldAnswerInfo, yesNoInfo, _commandID, _questionCount);
             if (isNewLowestRate[0])
@@ -1080,7 +1079,7 @@ namespace SVS_CustomGameBalance
         {
             if (CustomGameBalancePlugin.GetFortuneFix())
             {
-                if (Manager.Game.saveData.dataCount.circularNotice == 7 && Manager.Game.saveData.dataCount.isCircularNoticeUse)
+                if (Game.saveData.dataCount.circularNotice == 7 && Game.saveData.dataCount.isCircularNoticeUse)
                 {
                     int chance = _rnd.Next(1, 100);
                     switch (_successNo)
@@ -1179,9 +1178,9 @@ namespace SVS_CustomGameBalance
                     int[] visitType = new int[charas.Count];
                     //CustomGameBalancePlugin.Log.LogInfo($"Checks Lists (They should be the same): List1:{visitType.Length} = List2:{charas.Count}");
 
-                    List<int> visitHigh = new();
+                    System.Collections.Generic.List<int> visitHigh = new();
 
-                    int charaSelectedIndex = -1;
+                    int charaSelectedIndex;
                     for (int i = 0; i < charas.Count; i++)
                     {
                         if (i >= charas.Count) break;
@@ -1309,7 +1308,6 @@ namespace SVS_CustomGameBalance
                                         if (!isLover)
                                         {
                                             type = 1;
-                                            break;
                                         }
                                     }
                                     break;
@@ -1372,7 +1370,6 @@ namespace SVS_CustomGameBalance
                                         if (!isLover)
                                         {
                                             type = 1;
-                                            break;
                                         }
                                     }
                                     break;
@@ -1425,7 +1422,6 @@ namespace SVS_CustomGameBalance
                                         if (!isLover)
                                         {
                                             type = 1;
-                                            break;
                                         }
                                     }
                                     break;
@@ -1471,7 +1467,6 @@ namespace SVS_CustomGameBalance
                                         if (!isLover)
                                         {
                                             type = 1;
-                                            break;
                                         }
                                     }
                                     break;
@@ -1668,7 +1663,7 @@ namespace SVS_CustomGameBalance
                         if (actor.gameParameter.LvChastity > 2)
                         {
                             if (actor.charasGameParam.sensitivity.tableFavorabiliry[targetCharaID].ranks[0] == SensitivityParameter.Rank.HIGH || actor.charasGameParam.sensitivity.tableFavorabiliry[targetCharaID].ranks[0] == SensitivityParameter.Rank.MAX) return targetCharaID;
-                            else return -1;
+                            return -1;
                         }
                     }                     
                     break;
@@ -1771,7 +1766,7 @@ namespace SVS_CustomGameBalance
                     if (actor.gameParameter.LvChastity > 2)
                     {
                         if (actor.charasGameParam.sensitivity.tableFavorabiliry[targetCharaID].ranks[0] == SensitivityParameter.Rank.HIGH || actor.charasGameParam.sensitivity.tableFavorabiliry[targetCharaID].ranks[0] == SensitivityParameter.Rank.MAX) return targetCharaID;
-                        else return -1;
+                        return -1;
                     }
                     break;
 

@@ -1,19 +1,12 @@
 ﻿using Character;
-using FavorabiltyGainController;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SaveData;
 using SV;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FavorabiltyGainController
 {
     internal class FavorabilityMod
     {
-        private static System.Random _rnd = new System.Random();
+        //private static Random _rnd = new();
 
         public static FavourableImpressionManager RemoveFirstImpression(FavourableImpressionManager _instance, HumanData _myCharaData, CharactersGameParameter _myGameParam, HumanData _targetCharaData, CharactersGameParameter _targetGameParam)
         {

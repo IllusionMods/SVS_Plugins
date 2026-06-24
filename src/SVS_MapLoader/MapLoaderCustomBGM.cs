@@ -1,34 +1,33 @@
-﻿using Manager;
-using MapLoader;
-using SV;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
+using System.IO;
 using BepInEx;
+using Manager;
+using SV;
+using UnityEngine;
 
-namespace SVS_MapLoader
+namespace MapLoader
 {
     internal class MapLoaderCustomBGM
     {
-        private static System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<string,AssetBundle>> customBGMDic = new();
-        private static Dictionary<string, List<int>> bgmMapList = new();
+        private static readonly Dictionary<int, Dictionary<string,AssetBundle>> customBGMDic = new();
+        private static readonly Dictionary<string, List<int>> bgmMapList = new();
         
         private static string currentBGMPlaying = "";
         private static int nowMood = -1;
         private static int previousMap = -1;
-        private static bool resetBGM = false;
+        private static bool resetBGM;
         public static void InitCustomBGM()
         {
             if (customBGMDic.Count == 0) GetGameBGMBundles();
             else return;
-            var tempCustomBGM = MapLoader.MapLoader.GetCustomBGMList();
+            var tempCustomBGM = global::MapLoader.MapLoader.GetCustomBGMList();
             foreach (var customBGM in tempCustomBGM) 
             {
-                var bundleFile = System.IO.Path.Combine(Paths.GameRootPath, "abdata\\" + customBGM.Bundle);
-                if (System.IO.File.Exists(bundleFile))
+                var bundleFile = Path.Combine(Paths.GameRootPath, "abdata\\" + customBGM.Bundle);
+                if (File.Exists(bundleFile))
                 {
-                    AssetBundle _bundle = new AssetBundle();
-                    _bundle = AssetBundle.LoadFromFile(bundleFile);
-                    if (customBGMDic.ContainsKey(customBGM.MoodType)) customBGMDic[customBGM.MoodType].Add(customBGM.Asset, _bundle);
+                    var _bundle = AssetBundle.LoadFromFile(bundleFile);
+                    if (customBGMDic.TryGetValue(customBGM.MoodType, out var custmBgm)) custmBgm.Add(customBGM.Asset, _bundle);
                     else customBGMDic.Add(customBGM.MoodType, new Dictionary<string, AssetBundle> { { customBGM.Asset, _bundle } });
                 }
                 
@@ -42,44 +41,44 @@ namespace SVS_MapLoader
             {
                 if (item.Contains("sv_bgm_03"))
                 {
-                    customBGMDic.Add(5, new System.Collections.Generic.Dictionary<string, AssetBundle> { {"sv_bgm_03", item } });
+                    customBGMDic.Add(5, new Dictionary<string, AssetBundle> { {"sv_bgm_03", item } });
                 }
                 if (item.Contains("sv_bgm_04"))
                 {
-                    customBGMDic.Add(7, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_04", item } });
+                    customBGMDic.Add(7, new Dictionary<string, AssetBundle> { { "sv_bgm_04", item } });
                 }
                 if (item.Contains("sv_bgm_05")) 
                 {
-                    customBGMDic.Add(10, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_05", item } });
+                    customBGMDic.Add(10, new Dictionary<string, AssetBundle> { { "sv_bgm_05", item } });
                 }
                 if (item.Contains("sv_bgm_06"))
                 {
-                    customBGMDic.Add(4, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_06", item } });
+                    customBGMDic.Add(4, new Dictionary<string, AssetBundle> { { "sv_bgm_06", item } });
                 }
                 if (item.Contains("sv_bgm_07"))
                 {
-                    customBGMDic.Add(8, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_07", item } });
+                    customBGMDic.Add(8, new Dictionary<string, AssetBundle> { { "sv_bgm_07", item } });
                 }
                 if (item.Contains("sv_bgm_08"))
                 {
-                    customBGMDic.Add(9, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_08", item } });
+                    customBGMDic.Add(9, new Dictionary<string, AssetBundle> { { "sv_bgm_08", item } });
                 }
                 if (item.Contains("sv_bgm_09"))
                 {
-                    customBGMDic.Add(6, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_09", item } });
+                    customBGMDic.Add(6, new Dictionary<string, AssetBundle> { { "sv_bgm_09", item } });
                 }
                 if (item.Contains("sv_bgm_10"))
                 {
-                    customBGMDic.Add(3, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_10", item } });
+                    customBGMDic.Add(3, new Dictionary<string, AssetBundle> { { "sv_bgm_10", item } });
                 }
                 if (item.Contains("sv_bgm_11"))
                 {
-                    customBGMDic.Add(11, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_11", item } });
+                    customBGMDic.Add(11, new Dictionary<string, AssetBundle> { { "sv_bgm_11", item } });
                 }
                 if (item.Contains("sv_bgm_14"))
                 {
-                    customBGMDic.Add(14, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_14", item } });
-                    customBGMDic.Add(15, new System.Collections.Generic.Dictionary<string, AssetBundle> { { "sv_bgm_14", item } });
+                    customBGMDic.Add(14, new Dictionary<string, AssetBundle> { { "sv_bgm_14", item } });
+                    customBGMDic.Add(15, new Dictionary<string, AssetBundle> { { "sv_bgm_14", item } });
                 }
             }
         }
@@ -94,25 +93,26 @@ namespace SVS_MapLoader
                 }
                 return;
             }
-            else resetBGM = true;
+
+            resetBGM = true;
 
             if (previousMap != MapManager.Instance.MapID)
             {
                 previousMap = MapManager.Instance.MapID;
 
-                if (bgmMapList.ContainsKey(currentBGMPlaying))
+                if (bgmMapList.TryGetValue(currentBGMPlaying, out var bgmMap))
                 {
-                    if (!bgmMapList[currentBGMPlaying].Contains(previousMap)) AtmosphereAndBGMManager.Instance.ResetNowBGM();
+                    if (!bgmMap.Contains(previousMap)) AtmosphereAndBGMManager.Instance.ResetNowBGM();
                 }
                 else
                 {
-                    if (customBGMDic.ContainsKey(nowMood))
+                    if (customBGMDic.TryGetValue(nowMood, out var cusBgm))
                     {
-                        foreach (var bgm in customBGMDic[nowMood])
+                        foreach (var bgm in cusBgm)
                         {
-                            if (bgmMapList.ContainsKey(bgm.Key))
+                            if (bgmMapList.TryGetValue(bgm.Key, out var bgmMap2))
                             {
-                                if (bgmMapList[bgm.Key].Contains(previousMap)) AtmosphereAndBGMManager.Instance.ResetNowBGM();
+                                if (bgmMap2.Contains(previousMap)) AtmosphereAndBGMManager.Instance.ResetNowBGM();
                             }
                         }
                     }                 
@@ -127,10 +127,9 @@ namespace SVS_MapLoader
 
             foreach (var bgm in customBGMDic[moodType])
             {
-                if (bgmMapList.ContainsKey(bgm.Key))
+                if (bgmMapList.TryGetValue(bgm.Key, out var bgmMap3))
                 {
-                    if (bgmMapList[bgm.Key].Contains(mapID)) return bgm.Key;
-                    else return defBGM;
+                    return bgmMap3.Contains(mapID) ? bgm.Key : defBGM;
                 }
             }
             return defBGM;

@@ -4,6 +4,8 @@
 		<Version>1.3.1</Version>
 		<!-- Sets the 'File description' field on the dll file -->
 		<AssemblyTitle>Precisely set how many points the characters gain from interactions</AssemblyTitle>
+
+		<RootNamespace>FavorabiltyGainController</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

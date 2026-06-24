@@ -1,40 +1,37 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using System.IO;
+using BepInEx;
 using CharacterCreation;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using ILLGames.IO;
+using Manager;
 using SaveData;
 using SV;
 using SV.CoordeSelectScene;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-
 namespace SVS_MoreOutfits
 {
     internal static class MoreOutfits
     {
-        private static List<Toggle> tglGroup = new();
+        private static readonly List<Toggle> tglGroup = new();
 
-        private static Il2CppSystem.Collections.Generic.List<ThinkingManager.ChangeClothInfos> changeClothInfosList = new();
+        private static readonly Il2CppSystem.Collections.Generic.List<ThinkingManager.ChangeClothInfos> changeClothInfosList = new();
         private static Texture2D OutfitSprite { get; set; }
         public static DirectoryInfo[] GetImagesPath()
         {
-            string customOutfitPath = System.IO.Path.Combine(Paths.PluginPath, "SVS_MoreOutfits\\images");
+            string customOutfitPath = Path.Combine(Paths.PluginPath, "SVS_MoreOutfits\\images");
             if (Directory.Exists(customOutfitPath))
             {
                 DirectoryInfo dirInfo = new DirectoryInfo(customOutfitPath);
                 var imagePacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
 
-                if (imagePacks.Length == 0 || imagePacks == null) return null;
+                if (imagePacks.Length == 0) return null;
                 return imagePacks;
             }
             return null;
         }
         
-        public static bool[] CheckCoordinate(int maxOutfits, bool[] checkOptions)
+        public static void CheckCoordinate(int maxOutfits, bool[] checkOptions)
         {
             int coordCount = maxOutfits - 3; //3 is default coordinate lenght
             int index = 1;
@@ -50,14 +47,12 @@ namespace SVS_MoreOutfits
                     if (i >= index) checkOptions[i] = false;
                 }
             }
-
-            return checkOptions;
         }
         public static void CreateNewOutfitIcons(List<string> outfitsList, int maxOutfits)
         {
-            GameObject coordbg = new();
-            GameObject coordSelect = new();
-            GameObject outfitCasual = new();
+            GameObject coordbg;
+            GameObject coordSelect;
+            GameObject outfitCasual;
 
             var humanCusCoordSelect = HumanCustom.Instance;
             var simCoordSelect = CoordeSelect.Instance;
@@ -113,13 +108,12 @@ namespace SVS_MoreOutfits
 
             var coordinateGroup = coordSelect.GetComponent<HorizontalLayoutGroup>();//Layout group
 
-            GameObject customOutfit = new();//New GameObject to be use for new Outfits icons.
             int max = maxOutfits - 3;//Check max outfits, ignoring default ones.
             int number = 4;//Use for naming nothing else.
             for (int i = 0; i < max; i++)//<- Create GameObjects and their components for every new outfit.
             {
                 //Create a new GameObject and add Components to it
-                customOutfit = new GameObject("0" + number + "_" + outfitsList[i]);
+                var customOutfit = new GameObject("0" + number + "_" + outfitsList[i]); //New GameObject to be use for new Outfits icons.
                 if (number >= 10) customOutfit = new GameObject(number + "_" + outfitsList[i]);
                 number++;
                 customOutfit.layer = 5;
@@ -237,44 +231,45 @@ namespace SVS_MoreOutfits
             if (changeClothInfosList.Count > 0) return;
             bool[] options = MoreOutfitsPlugin.GetOptions();
             int maxOutfits = MoreOutfitsPlugin.GetMaxOutfits();
-            var newOptions = CheckCoordinate(maxOutfits, options); //Check Character coordinate lenght
+            CheckCoordinate(maxOutfits, options); //Check Character coordinate lenght
             var oldChangeOfClothesList = ThinkingManager.Instance.changeOfClothes;   
             
-            int weekDay = 0;
-            int timePeriod = 0;
-            int job = 0;
+            //int weekDay = 0;
+            //int timePeriod = 0;
+            //int job = 0;
             foreach (var day in oldChangeOfClothesList)
             {
                 ThinkingManager.ChangeClothInfos ccis = new ThinkingManager.ChangeClothInfos();
-                timePeriod = 0;
+                //timePeriod = 0;
                 foreach (var period in day.times)
                 {
                     ThinkingManager.ChangeClothInfo cci = new ThinkingManager.ChangeClothInfo();
-                    
+
                     Il2CppSystem.Collections.Generic.List<int> outfitsStartsValues = new();
-                    job = 0;
+                    //job = 0;
                     foreach (var value in period.starts)
                     {
                         outfitsStartsValues.Add(value);
                         //if (!newOptions[5] && value > 2) oldChangeOfClothesList[weekDay].times[timePeriod].starts[job] = 1;
-                        job++;
-                    }                   
+                        //job++;
+                    }
+
                     Il2CppSystem.Collections.Generic.List<int> outfitsChangesValues = new();
-                    job = 0;
+                    //job = 0;
                     foreach (var value in period.changes)
                     {
                         outfitsChangesValues.Add(value);
                         //if (!newOptions[5] && value > 2) oldChangeOfClothesList[weekDay].times[timePeriod].changes[job] = 1;
-                        job++;
+                        //job++;
                     }
 
-                    if (outfitsStartsValues.Count > 0) cci.starts = outfitsStartsValues; ;
+                    if (outfitsStartsValues.Count > 0) cci.starts = outfitsStartsValues;
                     if (outfitsChangesValues.Count > 0) cci.changes = outfitsChangesValues;
                     ccis.times.Add(cci);
-                    timePeriod++;
+                    //timePeriod++;
                 }
                 changeClothInfosList.Add(ccis);
-                weekDay++;
+                //weekDay++;
             }
         }
         public static void SetDailyOutfit(Actor _actor, bool _isStart, int _timezone, int maxOutfits)
@@ -282,8 +277,8 @@ namespace SVS_MoreOutfits
             if (_timezone >= 0)
             {
                 bool[] options = MoreOutfitsPlugin.GetOptions();
-                var newOptions = CheckCoordinate(maxOutfits, options); //Check Character coordinate lenght
-                ///Options
+                CheckCoordinate(maxOutfits, options); //Check Character coordinate lenght
+                //Options
                 //bool 0 = isPC
                 //bool 1 = Weekend
                 //bool 2 = Night
@@ -293,14 +288,13 @@ namespace SVS_MoreOutfits
                 //bool 6 = Bath
                 //bool 7 = Camping
                 //bool 8 = Home
-                ///
                 if (_actor.charasGameParam.isPC && !options[0]) return;
                 RestoreOutfitList(_actor, _timezone);
-                OutfitCondition_Weekend(_actor, _timezone, newOptions[1]);
-                OutfitCondition_Lewd(_actor, _timezone, newOptions[3]);
-                OutfitCondition_Sport(_actor, _timezone, newOptions[5]);
-                OutfitCondition_Night(_actor, _timezone, newOptions[2]);
-                OutfitCondition_Costume(_actor, _timezone, newOptions[4]);
+                OutfitCondition_Weekend(_actor, _timezone, options[1]);
+                OutfitCondition_Lewd(_actor, _timezone, options[3]);
+                OutfitCondition_Sport(_actor, _timezone, options[5]);
+                OutfitCondition_Night(_actor, _timezone, options[2]);
+                OutfitCondition_Costume(_actor, _timezone, options[4]);
 
                 //Force Change Outfit
                 //_actor.chaCtrl.coorde.SetNowCoordinate(chara.chaCtrl.data.Coordinates[4]);
@@ -310,7 +304,7 @@ namespace SVS_MoreOutfits
         }
         private static void RestoreOutfitList(Actor chara, int timeOfDay)
         {
-            int weekDay = Manager.Game.saveData.Week;
+            int weekDay = Game.saveData.Week;
             var dayList = ThinkingManager.Instance.changeOfClothes;
 
             if (dayList[weekDay].times[timeOfDay].starts[chara.Job] > 2)             
@@ -327,7 +321,7 @@ namespace SVS_MoreOutfits
         {
             if (useOutfit)
             {
-                int weekDay = Manager.Game.saveData.Week;
+                int weekDay = Game.saveData.Week;
                 if (weekDay > 4)
                 {
                     var dayList = ThinkingManager.Instance.changeOfClothes;
@@ -353,7 +347,7 @@ namespace SVS_MoreOutfits
                 if (timeOfDay >= 2)
                 {
                     bool[] extraOptions = MoreOutfitsPlugin.GetExtraOptions();
-                    int weekDay = Manager.Game.saveData.Week;
+                    int weekDay = Game.saveData.Week;
                     var dayList = ThinkingManager.Instance.changeOfClothes;
 
                     if (!extraOptions[0])
@@ -388,9 +382,9 @@ namespace SVS_MoreOutfits
         {
             if (useOutfit)
             {
-                if (Manager.Game.saveData.dataCount.circularNotice == 1 && Manager.Game.saveData.dataCount.isCircularNoticeUse)
+                if (Game.saveData.dataCount.circularNotice == 1 && Game.saveData.dataCount.isCircularNoticeUse)
                 {
-                    int weekDay = Manager.Game.saveData.Week;
+                    int weekDay = Game.saveData.Week;
                     var dayList = ThinkingManager.Instance.changeOfClothes;
 
                     int startOutfitID = dayList[weekDay].times[timeOfDay].starts[chara.Job];
@@ -412,7 +406,7 @@ namespace SVS_MoreOutfits
             if (useOutfit)
             {
                 var dayAndPeriod = MoreOutfitsPlugin.GetCostumeDayAndPeriod();
-                int weekDay = Manager.Game.saveData.Week;
+                int weekDay = Game.saveData.Week;
                 var dayList = ThinkingManager.Instance.changeOfClothes;
 
                 if (weekDay == dayAndPeriod.Item1)
@@ -665,7 +659,7 @@ namespace SVS_MoreOutfits
         }
         private static void OutfitCondition_Sport(Actor chara, int timeOfDay, bool useOutfit)
         {
-            int weekDay = Manager.Game.saveData.Week;
+            int weekDay = Game.saveData.Week;
             var dayList = ThinkingManager.Instance.changeOfClothes;
 
             if (changeClothInfosList[weekDay].times[timeOfDay].starts[chara.Job] == 8)
@@ -677,16 +671,6 @@ namespace SVS_MoreOutfits
             {
                 if (!useOutfit) dayList[weekDay].times[timeOfDay].changes[chara.Job] = 1;
                 else dayList[weekDay].times[timeOfDay].changes[chara.Job] = changeClothInfosList[weekDay].times[timeOfDay].changes[chara.Job];
-            }
-        }
-        private static void OutfitCondition(Actor chara, int timeOfDay, bool useOutfit)
-        {
-            if (useOutfit)
-            {
-                int weekDay = Manager.Game.saveData.Week;
-                var dayList = ThinkingManager.Instance.changeOfClothes;
-                int startOutfitID = -1;
-                int changeOutfitID = -1;
             }
         }
     }

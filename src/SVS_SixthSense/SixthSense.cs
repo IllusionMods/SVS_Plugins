@@ -1,4 +1,5 @@
 ﻿using ADV;
+using Il2CppSystem.Collections.Generic;
 using Manager;
 using SaveData;
 using SV;
@@ -10,7 +11,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
+using Scene = UnityEngine.SceneManagement.Scene;
 namespace SVS_SixthSense
 {
     public class SixthSense
@@ -18,18 +19,18 @@ namespace SVS_SixthSense
         public static GameObject sixthSenseObj;
         public static GameObject moodSensorObj;
         private static GameObject advMoodSensorObj;
-        private static Material SixthSenseMat = null;
+        private static Material SixthSenseMat;
 
-        private static AI currentCharaAI = null;
+        private static AI currentCharaAI;
 
         private static StateParameter.StateKind currentMood = StateParameter.StateKind.TOTAL;
 
         private static string currentName = "";
-        private static bool charaFound = false;
-        public static void MakeCanvas(UnityEngine.SceneManagement.Scene scene, GameObject customGameObj, SimulationScene _instance)
+        private static bool charaFound;
+        public static void MakeCanvas(Scene scene, SimulationScene _instance)
         {
             // Creating Canvas object
-            customGameObj = new GameObject("SixthSense");
+            var customGameObj = new GameObject("SixthSense");
             SceneManager.MoveGameObjectToScene(customGameObj, scene);
             var canvasScaler = customGameObj.AddComponent<CanvasScaler>();
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -143,12 +144,12 @@ namespace SVS_SixthSense
             if (isOpen) return false;
             return true;
         }
-        public static void ShowHavingSexText(Il2CppSystem.Collections.Generic.IReadOnlyList<Actor> readOnlyList)
+        public static void ShowHavingSexText(IReadOnlyList<Actor> readOnlyList)
         {
             if (readOnlyList == null) return;
             if (!CheckDisplay()) return;
-            readOnlyList.TryGet<Actor>(0, out Actor actorOne);
-            readOnlyList.TryGet<Actor>(1, out Actor actorTwo);
+            readOnlyList.TryGet(0, out Actor actorOne);
+            readOnlyList.TryGet(1, out Actor actorTwo);
             var charaOne = actorOne;
             var charaTwo = actorTwo;
             int mapID = -1;
@@ -197,12 +198,12 @@ namespace SVS_SixthSense
             }
             else SixthSensePlugin.Log.LogInfo("Chara not found");
         }
-        public static void ShowFightingText(Il2CppSystem.Collections.Generic.IReadOnlyList<Actor> readOnlyList)
+        public static void ShowFightingText(IReadOnlyList<Actor> readOnlyList)
         {
             if (readOnlyList == null) return;
             if (!CheckDisplay()) return;
-            readOnlyList.TryGet<Actor>(0, out Actor actorOne);
-            readOnlyList.TryGet<Actor>(1, out Actor actorTwo);
+            readOnlyList.TryGet(0, out Actor actorOne);
+            readOnlyList.TryGet(1, out Actor actorTwo);
             var charaOne = actorOne;
             var charaTwo = actorTwo;
             int mapID = -1;
@@ -336,10 +337,10 @@ namespace SVS_SixthSense
                                 {
                                     currentCharaAI = tempAI;
                                     currentMood = currentCharaAI.charaData.charasGameParam.state.State;
-                                    if (charaName != currentCharaAI.charaData.parameter.fullname)
-                                    {
-                                        var aiName = currentCharaAI.charaData.parameter.fullname;
-                                    }
+                                    //if (charaName != currentCharaAI.charaData.parameter.fullname)
+                                    //{
+                                    //    var aiName = currentCharaAI.charaData.parameter.fullname;
+                                    //}
                                     SetMoodSprite(moodSensorObj, currentCharaAI.charaData);
                                     if (SixthSensePlugin.IsDebugLog()) SixthSensePlugin.Log.LogInfo("Setting Chara Mood. First Time");
                                     break;
@@ -377,7 +378,7 @@ namespace SVS_SixthSense
                                     if (!charaFound)
                                     {
                                         currentMood = StateParameter.StateKind.TOTAL;
-                                        SetMoodSprite(moodSensorObj, currentCharaAI.charaData);
+                                        SetMoodSprite(moodSensorObj, currentCharaAI?.charaData);
                                         if (SixthSensePlugin.IsDebugLog()) SixthSensePlugin.Log.LogInfo("Current AI not found on Map and not selected AI");
                                     }
                                 }
@@ -391,7 +392,7 @@ namespace SVS_SixthSense
                             if (currentName != charaName)
                             {
                                 currentName = charaName;
-                                var aiName = currentCharaAI.charaData.parameter.fullname;
+                                //var aiName = currentCharaAI.charaData.parameter.fullname;
                                 currentMood = StateParameter.StateKind.TOTAL;
                                 SetMoodSprite(moodSensorObj, currentCharaAI.charaData);
                                 if (SixthSensePlugin.IsDebugLog()) SixthSensePlugin.Log.LogInfo("Mouse Hover, Changing Mood to Unknown");

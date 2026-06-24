@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using Il2CppInterop.Runtime;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
@@ -7,13 +8,13 @@ namespace SVS_SixthSense.Utils
 {
     internal class SixthSenseLoader
     {
-        public static T GetResource<T>(string name) where T : UnityEngine.Object
+        public static T GetResource<T>(string name) where T : Object
         {
-            var objs = Resources.FindObjectsOfTypeAll(Il2CppInterop.Runtime.Il2CppType.Of<T>());
+            var objs = Resources.FindObjectsOfTypeAll(Il2CppType.Of<T>());
             for (var i = objs.Length - 1; i >= 0; --i)
             {
                 var obj = objs[i];
-                if (obj.name == name)
+                if (obj != null && obj.name == name)
                 {
                     var ret = obj.TryCast<T>();
                     return ret;
@@ -65,7 +66,7 @@ namespace SVS_SixthSense.Utils
         }
         public static Texture2D LoadSprite(int type)
         {
-            string resourceSprite = "SVS_SixthSense.Resources._unknown.png";
+            string resourceSprite;
             switch (type)
             {
                 case 0:// Happy
@@ -103,7 +104,7 @@ namespace SVS_SixthSense.Utils
                     break;
             }
 
-            Texture2D tex = new Texture2D(2, 2, UnityEngine.Experimental.Rendering.GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
+            Texture2D tex = new Texture2D(2, 2, GraphicsFormat.R8G8B8A8_SRGB, 1, TextureCreationFlags.None);
 
             byte[] embeded = GetPngResourceAsByteArray(resourceSprite);
             if (embeded.Length > 0)

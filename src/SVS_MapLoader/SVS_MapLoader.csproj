@@ -4,6 +4,8 @@
 		<Version>1.0</Version>
 		<!-- Sets the 'File description' field on the dll file -->
 		<AssemblyTitle>Loads Custom Maps and Custom Jobs into the game</AssemblyTitle>
+
+		<RootNamespace>MapLoader</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,31 +1,29 @@
-﻿using ADV;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using ADV;
 using BepInEx;
 using BepInEx.Logging;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Manager;
 using SaveData;
 using SV;
 using SV.H.UI;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
+using Random = System.Random;
 
 namespace SVS_CustomFortune
 {
     internal class CustomFortuneFunctions
     {
-        private static Dictionary<int, List<CustomFortuneParam.FortuneParam>> fortunePackDic = new Dictionary<int, List<CustomFortuneParam.FortuneParam>>();
-        private static Dictionary<int, CustomFortuneParam.FortuneParam> customFortuneDic = new Dictionary<int, CustomFortuneParam.FortuneParam>();
-        private static Il2CppSystem.Collections.Generic.List<ThinkingManager.ChangeClothInfos> changeClothInfosList = new();
-        private static List<int> fortuneIDs = new List<int>();
-        private static bool loadedDics = false;
-        private static bool loadedEffectsDic = false;
-        private static int currentFortune = -2;
-        private static System.Random _rnd = new System.Random();
+        private static readonly Dictionary<int, List<CustomFortuneParam.FortuneParam>> fortunePackDic = new();
+        private static readonly Dictionary<int, CustomFortuneParam.FortuneParam> customFortuneDic = new();
+        private static readonly Il2CppSystem.Collections.Generic.List<ThinkingManager.ChangeClothInfos> changeClothInfosList = new();
+        private static readonly List<int> fortuneIDs = new();
+        private static bool loadedDics;
+        private static bool loadedEffectsDic;
+        //private static int currentFortune = -2;
+        private static readonly Random _rnd = new();
 
         public static void CustomFortunesInit()
         {
@@ -74,11 +72,11 @@ namespace SVS_CustomFortune
                 else fortuneIDs.Add(gameFortune.ID);
             }
 
-            foreach (var customF in customFortuneDic.Values)
-            {
-                if (!customF.Enable) continue;
-
-            }
+            //foreach (var customF in customFortuneDic.Values)
+            //{
+            //    if (!customF.Enable) continue;
+            //
+            //}
         }
         public static bool IsCustomFortune(string asset, out int fortuneID)
         {
@@ -104,7 +102,7 @@ namespace SVS_CustomFortune
                     if (!fortuneEffectTable.ContainsKey(fotune.ID))
                     {
                         if (!fotune.Enable) continue;
-                        DivinationEffectsInfoParam customFortuneEffect = new();
+                        var customFortuneEffect = new DivinationEffectsInfoParam();
                         customFortuneEffect.ID = fotune.ID;
                         Il2CppSystem.Collections.Generic.List<float> favorPoints = new();
                         for (int i = 0; i < 4; i++)
@@ -125,22 +123,21 @@ namespace SVS_CustomFortune
                 }
             }
         }
-        public static OpenData SetCustomFortuneScenario(OpenData openData, int _fortuneID)
+        public static void SetCustomFortuneScenario(OpenData openData, int _fortuneID)
         {
-            if (_fortuneID <= 7) return openData;
+            if (_fortuneID <= 7) return;
             if (customFortuneDic.Count == 0)
             {
                 CustomFortunePlugin.Log.LogInfo($"Custom List Empty");
-                return openData;
+                return;
             }
 
-            if (customFortuneDic.ContainsKey(_fortuneID))
+            if (customFortuneDic.TryGetValue(_fortuneID, out var customFortune))
             {
-                var customFortune = customFortuneDic[_fortuneID];
                 CustomFortunePlugin.Log.LogInfo($"Found Fortune! {customFortune.Name}");
 
-                ScenarioData scenarioData = new ScenarioData();
-                scenarioData._list = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<ScenarioCommand>(customFortune.ScenarioParams.Count);
+                var scenarioData = new ScenarioData();
+                scenarioData._list = new Il2CppReferenceArray<ScenarioCommand>(customFortune.ScenarioParams.Count);
                 //----------------------------------------------------------------------------------------------------------
                 int index = 0;
                 foreach (var param in customFortune.ScenarioParams)
@@ -150,7 +147,7 @@ namespace SVS_CustomFortune
                     scenarioData._list[index]._version = 0;
                     scenarioData._list[index]._multi = false;
                     scenarioData._list[index]._command = (Command)Enum.Parse(typeof(Command), param.Command);
-                    scenarioData._list[index]._args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(param.Args.Length);
+                    scenarioData._list[index]._args = new Il2CppStringArray(param.Args.Length);
                     for (int i = 0; i < param.Args.Length; i++)
                     {
                         scenarioData._list[index]._args[i] = param.Args[i];
@@ -274,11 +271,10 @@ namespace SVS_CustomFortune
                 //----------------------------------------------------------------------------------------------------------
                 openData._data = scenarioData;
             }
-            return openData;
         }
         private static string GetCustomFortunePath()
         {
-            string customFortunePath = System.IO.Path.Combine(Paths.GameRootPath, "abdata\\mods\\CustomFortunes");
+            string customFortunePath = Path.Combine(Paths.GameRootPath, "abdata\\mods\\CustomFortunes");
             if (!Directory.Exists(customFortunePath)) CustomFortunePlugin.Log.Log(LogLevel.Message, $"Missing mod or custom fortune folder");
 
             return customFortunePath;
@@ -287,15 +283,14 @@ namespace SVS_CustomFortune
         {
             DirectoryInfo dirInfo = new DirectoryInfo(customFortunePath);
             var fortunePacks = dirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly);
-            if (fortunePacks.Length == 0 || fortunePacks == null) return false;
+            if (fortunePacks.Length == 0) return false;
 
             int index = 0;
             foreach (var fortunePack in fortunePacks)
             {
                 var fortuneFilePath = Path.Combine(fortunePack.FullName, "fortunes.json");
-                if (!System.IO.File.Exists(fortuneFilePath)) continue;
-                System.Collections.Generic.List<CustomFortuneParam.FortuneParam> fortuneList = new System.Collections.Generic.List<CustomFortuneParam.FortuneParam>();
-                fortuneList = CustomFortuneParam.DeserializeFortunes(fortuneFilePath);
+                if (!File.Exists(fortuneFilePath)) continue;
+                var fortuneList = CustomFortuneParam.DeserializeFortunes(fortuneFilePath);
                 if (fortuneList == null || fortuneList.Count <= 0)
                 {
                     CustomFortunePlugin.Log.LogInfo($"Invalid fortune json file");
@@ -318,8 +313,7 @@ namespace SVS_CustomFortune
                     foreach (var item in dic)
                     {
                         if (!item.Enable) continue;
-                        if (item.ID > 7 && !customFortuneDic.ContainsKey(item.ID)) customFortuneDic.Add(item.ID, item);
-                        else
+                        if (item.ID <= 7 || !customFortuneDic.TryAdd(item.ID, item))
                         {
                             CustomFortunePlugin.Log.LogInfo($"Repeated ID for Custom Fortunes: {customFortuneDic[item.ID].Name} and {item.Name}");
                         }
@@ -333,15 +327,14 @@ namespace SVS_CustomFortune
 
         private static Texture2D LoadPNG(string path)
         {
-            Texture2D tex = new Texture2D(2, 2); ;
-            byte[] fileData;
+            Texture2D tex = new Texture2D(2, 2);
 
             string packPath = GetCustomFortunePath();
             string spritePath = Path.Combine(packPath, path);
 
             if (File.Exists(spritePath))
             {
-                fileData = File.ReadAllBytes(spritePath);
+                var fileData = File.ReadAllBytes(spritePath);
                 tex.LoadImage(fileData);
                 tex.filterMode = FilterMode.Bilinear;
                 tex.Compress(true);
@@ -355,25 +348,24 @@ namespace SVS_CustomFortune
         {
             var sheetTran = _fortune.transform.Find("Panel/imgResult/anm2dIcon");
             if (sheetTran == null) return;
-            
+
             var sheetAnimTwoD = sheetTran.GetComponent<Animation2D>();
-            if (_fortuneID < 8) 
+            if (_fortuneID < 8)
             {
                 if (sheetAnimTwoD.FPS != 1) sheetAnimTwoD.FPS = 1;
                 return;
             }
 
-            var sheetImage = sheetTran.GetComponent<Image>();
+            //var sheetImage = sheetTran.GetComponent<Image>();
             _fortune._txtLuck.text = customFortuneDic[_fortuneID].ShortMessage;
             if (sheetAnimTwoD != null)
             {
-                sheetAnimTwoD.Sheet = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<UnityEngine.Sprite>(customFortuneDic[_fortuneID].SpritesPath.Length);
+                sheetAnimTwoD.Sheet = new Il2CppReferenceArray<Sprite>(customFortuneDic[_fortuneID].SpritesPath.Length);
 
-                Texture2D spriteTexture = new Texture2D(2, 2);
                 int index = 0;
                 foreach (var spritePath in customFortuneDic[_fortuneID].SpritesPath)
                 {
-                    spriteTexture = LoadPNG(spritePath);
+                    var spriteTexture = LoadPNG(spritePath);
                     if (spriteTexture != null)
                     {
                         Sprite sprite = Sprite.Create(spriteTexture, new Rect(0.0f, 0.0f, spriteTexture.width, spriteTexture.height), new Vector2(0f, 1f), 100.0f);
@@ -395,35 +387,34 @@ namespace SVS_CustomFortune
             SetFortuneIDList();
             if (fortuneIDs.Count == 0) return;
             int select = _rnd.Next(0, fortuneIDs.Count - 1);
-            Manager.Game.saveData.dataCount.circularNotice = fortuneIDs[select];
-            CustomFortunePlugin.Log.LogInfo($"Fortune randomizer result: {Manager.Game.saveData.dataCount.circularNotice}");
+            Game.saveData.dataCount.circularNotice = fortuneIDs[select];
+            CustomFortunePlugin.Log.LogInfo($"Fortune randomizer result: {Game.saveData.dataCount.circularNotice}");
         }
-        public static Il2CppStructArray<int> SetFortuneFavorability(Il2CppStructArray<int> favors)
+        public static void SetFortuneFavorability(Il2CppStructArray<int> favors)
         {
-            var isFortuneActive = Manager.Game.saveData.dataCount.isCircularNoticeUse;
+            var isFortuneActive = Game.saveData.dataCount.isCircularNoticeUse;
             if (isFortuneActive)
             {
-                var circularID = Manager.Game.saveData.dataCount.circularNotice;
+                var circularID = Game.saveData.dataCount.circularNotice;
                 if (circularID > 7)
                 {
-                    if (!customFortuneDic[circularID].Enable) return favors;
+                    if (!customFortuneDic[circularID].Enable) return;
                     favors[0] = (int)(favors[0] * customFortuneDic[circularID].FavorPoints[0]);
                     favors[1] = (int)(favors[1] * customFortuneDic[circularID].FavorPoints[1]);
                     favors[2] = (int)(favors[2] * customFortuneDic[circularID].FavorPoints[2]);
                     favors[3] = (int)(favors[3] * customFortuneDic[circularID].FavorPoints[3]);
                 }
             }
-            return favors;
         }
-        public static Il2CppSystem.Collections.Generic.List<int> SetFortuneStatesPoints(Il2CppSystem.Collections.Generic.List<int> states)
+        public static void SetFortuneStatesPoints(Il2CppSystem.Collections.Generic.List<int> states)
         {
-            var isFortuneActive = Manager.Game.saveData.dataCount.isCircularNoticeUse;
+            var isFortuneActive = Game.saveData.dataCount.isCircularNoticeUse;
             if (isFortuneActive)
             {
-                var circularID = Manager.Game.saveData.dataCount.circularNotice;
+                var circularID = Game.saveData.dataCount.circularNotice;
                 if (circularID > 7)
                 {
-                    if (!customFortuneDic[circularID].Enable) return states;
+                    if (!customFortuneDic[circularID].Enable) return;
 
                     for (var i = 0; i < customFortuneDic[circularID].StatesPoints.Count; i++)
                     {
@@ -432,31 +423,30 @@ namespace SVS_CustomFortune
                     }
                 }
             }
-            return states;
         }
-        public static void SetFortuneSuccessPoints()
-        {
-            var isFortuneActive = Manager.Game.saveData.dataCount.isCircularNoticeUse;
-            if (isFortuneActive)
-            {
-                var circularID = Manager.Game.saveData.dataCount.circularNotice;
-                if (circularID > 7)
-                {
-                    if (!customFortuneDic[circularID].Enable) return;
-                }
-            }
-        }
+        //public static void SetFortuneSuccessPoints()
+        //{
+        //    var isFortuneActive = Manager.Game.saveData.dataCount.isCircularNoticeUse;
+        //    if (isFortuneActive)
+        //    {
+        //        var circularID = Manager.Game.saveData.dataCount.circularNotice;
+        //        if (circularID > 7)
+        //        {
+        //            if (!customFortuneDic[circularID].Enable) return;
+        //        }
+        //    }
+        //}
 
-        public static YesNoJudgeManager.AnswerInfo FortuneAnswerRate(YesNoJudgeManager.AnswerInfo answerInfo, YesNoJudgeManager.YesNoInfo yesNoInfo, int _commandID, int _questionCount)
+        public static void FortuneAnswerRate(YesNoJudgeManager.AnswerInfo answerInfo, YesNoJudgeManager.YesNoInfo yesNoInfo, int _commandID, int _questionCount)
         {
-            if (answerInfo.ans > 1) return answerInfo;
-            var isFortuneActive = Manager.Game.saveData.dataCount.isCircularNoticeUse;
+            if (answerInfo.ans > 1) return;
+            var isFortuneActive = Game.saveData.dataCount.isCircularNoticeUse;
             if (isFortuneActive)
             {
-                var circularID = Manager.Game.saveData.dataCount.circularNotice;
+                var circularID = Game.saveData.dataCount.circularNotice;
                 if (circularID > 7)
                 {
-                    if (!customFortuneDic[circularID].Enable || customFortuneDic[circularID].AddSuccessPoint == 0) return answerInfo;
+                    if (!customFortuneDic[circularID].Enable || customFortuneDic[circularID].AddSuccessPoint == 0) return;
                     if (customFortuneDic[circularID].ActionsCommands.CharaActionsAnswers.Contains(_commandID) || customFortuneDic[circularID].ActionsCommands.CharaActionsAnswers.Count == 0)
                     {
                         if (answerInfo.rate > 0)
@@ -472,14 +462,12 @@ namespace SVS_CustomFortune
                             else
                             {
                                 var chance = _rnd.Next(1, 100);
-                                if (chance <= answerInfo.rate) answerInfo.ans = 0;
-                                else answerInfo.ans = 1;
-                            }    
+                                answerInfo.ans = chance <= answerInfo.rate ? 0 : 1;
+                            }
                         }
                     }
                 }
             }
-            return answerInfo;
         }
 
         public static void CreateOldChangeOfClothesList()
@@ -505,7 +493,7 @@ namespace SVS_CustomFortune
                         outfitsChangesValues.Add(value);
                     }
 
-                    if (outfitsStartsValues.Count > 0) cci.starts = outfitsStartsValues; ;
+                    if (outfitsStartsValues.Count > 0) cci.starts = outfitsStartsValues;
                     if (outfitsChangesValues.Count > 0) cci.changes = outfitsChangesValues;
                     ccis.times.Add(cci);
                 }
@@ -516,12 +504,12 @@ namespace SVS_CustomFortune
         {
             if (timeOfDay >= 0)
             {
-                if (Manager.Game.saveData.dataCount.circularNotice > 7 && Manager.Game.saveData.dataCount.isCircularNoticeUse)
+                if (Game.saveData.dataCount.circularNotice > 7 && Game.saveData.dataCount.isCircularNoticeUse)
                 {
-                    var fortuneID = Manager.Game.saveData.dataCount.circularNotice;
+                    var fortuneID = Game.saveData.dataCount.circularNotice;
                     if (customFortuneDic[fortuneID].Outfits.UseOutfit)
                     {
-                        int weekDay = Manager.Game.saveData.Week;
+                        int weekDay = Game.saveData.Week;
                         var dayList = ThinkingManager.Instance.changeOfClothes;
 
                         int startOutfitID = dayList[weekDay].times[timeOfDay].starts[chara.Job];
@@ -546,7 +534,7 @@ namespace SVS_CustomFortune
 
         public static int SetCharaTarget(Actor actor, int commandID, int targetID)
         {
-            var circularID = Manager.Game.saveData.dataCount.circularNotice;
+            var circularID = Game.saveData.dataCount.circularNotice;
             if (customFortuneDic.ContainsKey(circularID))
             {
                 if (customFortuneDic[circularID].ActionsCommands.ReduceActionCommandRate == null) return targetID;
@@ -557,7 +545,7 @@ namespace SVS_CustomFortune
                     var chance = _rnd.Next(0, 100);
                     if (chance <= value) return -1;
                 }
-            }      
+            }
             return targetID;
         }
     }

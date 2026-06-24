@@ -1,25 +1,25 @@
-﻿using SaveData;
+﻿using System;
+using Manager;
+using SaveData;
 using SV;
-using System;
 
 namespace SVS_CustomGameBalance
 {
     internal class CGBFixes
     {
-        private static Random rnd = new Random();
+        private static readonly Random rnd = new();
         public static void FixOnAnswerRate(YesNoJudgeManager.AnswerInfo answerInfo, YesNoJudgeManager.YesNoInfo yesNoInfo, int commandID, int questionCount)
         {
             var fixes = CustomGameBalancePlugin.GetGameFixes();
             if (!fixes[0]) return;
             int askingCharaID = yesNoInfo.active.charasGameParam.Index;
             if (!yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry.ContainsKey(askingCharaID)) return;
-            float answerRate = 0;
             float modifier = 1f;
 
             //Buff for Fortune 7
             if (CustomGameBalancePlugin.GetFortuneFix())
             {
-                if (Manager.Game.saveData.dataCount.circularNotice == 7 && Manager.Game.saveData.dataCount.isCircularNoticeUse)
+                if (Game.saveData.dataCount.circularNotice == 7 && Game.saveData.dataCount.isCircularNoticeUse)
                 {
                     modifier = 1.1f;
                 }
@@ -37,7 +37,7 @@ namespace SVS_CustomGameBalance
 
                 if (yesNoInfo.passive.gameParameter.LvChastity > 2)
                 {
-                    answerRate = CalcBBQAnswer(yesNoInfo.passive, yesNoInfo.active, askingCharaID, modifier);
+                    float answerRate = CalcBBQAnswer(yesNoInfo.passive, yesNoInfo.active, askingCharaID, modifier);
                     if (answerRate <= 0)
                     {
                         answerInfo.rate = 0;
@@ -48,7 +48,6 @@ namespace SVS_CustomGameBalance
                     {
                         answerInfo.rate = answerRate;
                         answerInfo.ans = 0;
-                        return;
                     }
                     else
                     {
@@ -71,20 +70,17 @@ namespace SVS_CustomGameBalance
                             if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry.ContainsKey(askingCharaID))
                             {
                                 if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.HIGH || yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.MAX) break;
+                                if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.MIDDLE)
+                                {
+                                    answerInfo.rate = 10 * modifier;
+                                    int chance = rnd.Next(1, 100);
+                                    if (chance <= answerInfo.rate) answerInfo.ans = 0;
+                                    else answerInfo.ans = 1;
+                                }
                                 else
                                 {
-                                    if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.MIDDLE)
-                                    {
-                                        answerInfo.rate = 10 * modifier;
-                                        int chance = rnd.Next(1, 100);
-                                        if (chance <= answerInfo.rate) answerInfo.ans = 0;
-                                        else answerInfo.ans = 1;
-                                    }
-                                    else
-                                    {
-                                        answerInfo.rate = 0;
-                                        answerInfo.ans = 1;
-                                    }
+                                    answerInfo.rate = 0;
+                                    answerInfo.ans = 1;
                                 }
                             }
                             break;
@@ -93,11 +89,8 @@ namespace SVS_CustomGameBalance
                             if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry.ContainsKey(askingCharaID))
                             {
                                 if (yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.HIGH || yesNoInfo.passive.charasGameParam.sensitivity.tableFavorabiliry[askingCharaID].ranks[0] == SensitivityParameter.Rank.MAX) break;
-                                else
-                                {
-                                    answerInfo.rate = 0;
-                                    answerInfo.ans = 1;
-                                }
+                                answerInfo.rate = 0;
+                                answerInfo.ans = 1;
                             }
                             break;
                     }
@@ -150,7 +143,7 @@ namespace SVS_CustomGameBalance
                         break;
                 }
 
-                ///Additive and subtraction
+                //Additive and subtraction
                 //Check Traits
                 if (_actor.gameParameter.individuality.answer.Contains(6)) baseRate += 4;
                 if (_actor.gameParameter.individuality.answer.Contains(7)) baseRate += 7;
@@ -164,7 +157,7 @@ namespace SVS_CustomGameBalance
                 if (_actor.charasGameParam.state._State_k__BackingField == StateParameter.StateKind.DISAPPOINTMENT) baseRate -= 8;
                 if (_actor.charasGameParam.state._State_k__BackingField == StateParameter.StateKind.TENSION) baseRate -= 4;
 
-                ///Multi and Division
+                //Multi and Division
                 if (_actor.gameParameter.individuality.answer.Contains(2))//Bad with Guys
                 {
                     if (_TargetActor.parameter.sex == 0)
@@ -203,7 +196,7 @@ namespace SVS_CustomGameBalance
                     }
                 }
 
-                ///Overrides
+                //Overrides
                 if (_actor.gameParameter.individuality.answer.Contains(29))//Singleminded
                 {
                     if (_actor.charasGameParam.memory.lovers.Count > 0)
@@ -233,8 +226,9 @@ namespace SVS_CustomGameBalance
 
             if (actor.gameParameter.LvChastity > 2)
             {
-                if (actor.charasGameParam.sensitivity.tableFavorabiliry[result].ranks[0] == SensitivityParameter.Rank.HIGH || actor.charasGameParam.sensitivity.tableFavorabiliry[result].ranks[0] == SensitivityParameter.Rank.MAX) return result;
-                else return -1;
+                if (actor.charasGameParam.sensitivity.tableFavorabiliry[result].ranks[0] != SensitivityParameter.Rank.HIGH &&
+                    actor.charasGameParam.sensitivity.tableFavorabiliry[result].ranks[0] != SensitivityParameter.Rank.MAX)
+                    return -1;
             }
             return result;
         }

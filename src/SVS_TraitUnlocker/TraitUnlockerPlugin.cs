@@ -1,14 +1,13 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using HarmonyLib;
-using CharacterCreation.UI;
 using Character;
+using CharacterCreation.UI;
+using CharacterCreation.UI.View;
+using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using System.Collections.Generic;
 using Manager;
-using SVS_TraitUnlocker;
-
 namespace TraitUnlocker
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -23,7 +22,7 @@ namespace TraitUnlocker
         public override void Load()
         {
             Log = base.Log;
-            var EnableConfig = Config.Bind("General","Enable",true,"Reload the game to Enable/Disable");
+            var EnableConfig = Config.Bind("General", "Enable", true, "Reload the game to Enable/Disable");
 
             if (EnableConfig.Value)
             {
@@ -74,7 +73,7 @@ namespace TraitUnlocker
 
             [HarmonyPostfix]
             [HarmonyPatch(typeof(AnswerCheckGroupWindow), nameof(AnswerCheckGroupWindow.Initialize))]
-            private static void ToggleGroupOverride(AnswerCheckGroupWindow __instance, CharacterCreation.UI.View.CategoryView viewer, IReadOnlyDictionary<int, string> table, HumanDataGameParameter_SV.AnswerBase answerBase)
+            private static void ToggleGroupOverride(AnswerCheckGroupWindow __instance, CategoryView viewer, IReadOnlyDictionary<int, string> table, HumanDataGameParameter_SV.AnswerBase answerBase)
             {
                 int _maxTrait = Game._IndividualityInfoTable_k__BackingField.Count;
 

@@ -1,9 +1,13 @@
-﻿using Character;
-using SaveData;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using Character;
 using Il2CppInterop.Runtime;
+using Manager;
+using SaveData;
+using SV.H;
+using UnityEngine;
 
 namespace FavorabiltyGainController
 {
@@ -15,27 +19,27 @@ namespace FavorabiltyGainController
         }
         public static int TryGetActorId(this Actor currentAdvChara)
         {
-            if (currentAdvChara == null) throw new System.ArgumentNullException(nameof(currentAdvChara));
+            if (currentAdvChara == null) throw new ArgumentNullException(nameof(currentAdvChara));
 
-            var found = Manager.Game.Charas.AsManagedEnumerable().FirstOrDefault(x => currentAdvChara.Equals(x.Value));
+            var found = Game.Charas.AsManagedEnumerable().FirstOrDefault(x => currentAdvChara.Equals(x.Value));
             return found.Value != null ? found.Key : -1;
         }
 
         /// <summary>
         /// Get the main character instance of the actor (the one that is visible on the main map and saved to the save file).
         /// </summary>
-        public static KeyValuePair<int, Actor> FindMainActorInstance(this SV.H.HActor x) => x?.Actor.FindMainActorInstance() ?? default;
+        public static KeyValuePair<int, Actor> FindMainActorInstance(this HActor? x) => x?.Actor.FindMainActorInstance() ?? default;
 
         /// <summary>
         /// Get the main character instance of the actor (the one that is visible on the main map and saved to the save file).
         /// </summary>
-        public static KeyValuePair<int, Actor> FindMainActorInstance(this Actor x) => x?.charFile.About.FindMainActorInstance() ?? default;
+        public static KeyValuePair<int, Actor> FindMainActorInstance(this Actor? x) => x?.charFile.About.FindMainActorInstance() ?? default;
 
         /// <summary>
         /// Get the main character instance of the actor (the one that is visible on the main map and saved to the save file).
         /// TODO: Find a better way to get the originals
         /// </summary>
-        public static KeyValuePair<int, Actor> FindMainActorInstance(this HumanDataAbout x) => x == null ? default : Manager.Game.Charas.AsManagedEnumerable().FirstOrDefault(y => x.dataID == y.Value.charFile.About.dataID);
+        public static KeyValuePair<int, Actor> FindMainActorInstance(this HumanDataAbout? x) => x == null ? default : Game.Charas.AsManagedEnumerable().FirstOrDefault(y => x.dataID == y.Value.charFile.About.dataID);
 
         public static IEnumerable<T> AsManagedEnumerable<T>(this Il2CppSystem.Collections.Generic.List<T> collection)
         {

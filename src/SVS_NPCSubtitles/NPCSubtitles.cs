@@ -1,25 +1,20 @@
-﻿using ADV;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using ADV;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using H;
 using HarmonyLib;
 using Manager;
-using SaveData;
 using SV;
 using SV.Chara;
 using SV.Title;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static Il2CppSystem.DateTimeParse;
-
 namespace SVS_NPCSubtitles
 {
     [BepInPlugin(GUID, DisplayName, Version)]
@@ -43,8 +38,8 @@ namespace SVS_NPCSubtitles
 
             var colorConverter = new TypeConverter
             {
-                ConvertToString = (obj, type) => ColorUtility.ToHtmlStringRGBA((Color)obj),
-                ConvertToObject = (str, type) =>
+                ConvertToString = (obj, _) => ColorUtility.ToHtmlStringRGBA((Color)obj),
+                ConvertToObject = (str, _) =>
                 {
                     if (!ColorUtility.TryParseHtmlString("#" + str.Trim('#', ' '), out var c))
                         throw new FormatException("Invalid color string, expected hex #RRGGBBAA");
@@ -68,9 +63,9 @@ namespace SVS_NPCSubtitles
             return true;
         }     
 
-        private static Dictionary<string, string[]> voiceTextDic = new Dictionary<string, string[]>();
+        private static Dictionary<string, string[]> voiceTextDic = new();
         //private static Dictionary<string, string[]> voiceMaleTextDic = new Dictionary<string, string[]>();
-        private static bool gotCharaText = false;
+        private static bool gotCharaText;
         private enum Language
         {
             Japanese = 0,
@@ -92,17 +87,14 @@ namespace SVS_NPCSubtitles
                     voiceTextDic = JsonSerializer.Deserialize<Dictionary<string, string[]>>(json);
                     gotCharaText = true;
                     sr.Close();
-                    return;
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     Log.LogInfo($"Failed to read SVS_Subtitles_Female_NPC.json file {ex}");
                     gotCharaText = false;
-                    return;
                 }
             }
             else Log.LogInfo("SVS_Subtitles_Female_NPC.json not found!");
-            return;
         }
 
         private static string ReplaceTagWithValue(string _text)
@@ -110,7 +102,7 @@ namespace SVS_NPCSubtitles
             if (_text == "0")
             {
                 var commandID = charaAI.charaData.CommandNo;
-                _text = NPCSubtitlesCommands.GetCharaIntention(commandID, out bool success);
+                _text = NPCSubtitlesCommands.GetCharaIntention(commandID, out _);
                 return _text;
             }
 
@@ -176,8 +168,8 @@ namespace SVS_NPCSubtitles
         private static GameObject npcSubObj;
         private static AI charaAI;
         private static string subText = "";
-        private static bool isDisplay = false;
-        private static bool isReset = false;
+        private static bool isDisplay;
+        private static bool isReset;
         internal static class Hooks
         {
             [HarmonyPostfix]
@@ -255,7 +247,7 @@ namespace SVS_NPCSubtitles
 
             [HarmonyPriority(300)]
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(ADV.FukidashiUICanvas), nameof(ADV.FukidashiUICanvas.Emit))]
+            [HarmonyPatch(typeof(FukidashiUICanvas), nameof(FukidashiUICanvas.Emit))]
             public static Fukidashi DisplaySubtitle(Fukidashi __result, Transform target)
             {              
                 if (__result != null)
