@@ -39,7 +39,7 @@ Adds dynamic sweat effects to characters during H scenes. Characters will start 
 ### SVS_CustomFortune
 Allows creation and loading of custom fortune events from JSON files. Supports custom fortune types, rates, favor points, state points, success points, action commands, outfit changes, sprites, and scenario parameters. Enables modders to create entirely new fortune events with custom animations and effects.
 
-> Check [this guide](guides/Custom%20Fortune%20Guide.pdf) for instructions on creating custom fortunes ([original on Google docs](https://docs.google.com/document/d/1MiH7E8uqqVg104-ATxwKAf4fY2G-XhGTPpxXsosanUc/edit?usp=sharing)).
+> Check [this guide](guides/SVS%20Custom%20Fortune%20Guide/SVS%20Custom%20Fortune%20Guide.md) for instructions on creating custom fortunes.
 
 ### SVS_CustomGameBalance
 A comprehensive gameplay customization plugin that provides extensive control over game mechanics including:
