@@ -27,9 +27,9 @@ Second, [download](https://github.com/IllusionMods/SVS_Plugins/releases) the Per
 Inside the template zip, you have all the files needed for the personality to work. You will need to edit each file inside the template.   
 First you must select an ID for your personality, you can choose anything from 16\~99 and 104\~999. *~~Keep in mind that right now only IDs below 100 will appear in the Voice Settings, IDs above 100 do not appear, so for these personalities you won’t be able to change the volume.~~* **I have fixed the issue with the ID above 100, so pick any ID that you want. Now they will appear in the Voice Settings.**
 
-**Also let me know which IDs are you planning to use, since duplicated IDs are not supported. Currently I have a spreadsheet to keep track of the progress on [Custom Personalities](SVS%20Custom%20Personalities.xlsx) ([Original on Google Docs](https://docs.google.com/spreadsheets/d/1jub1UsWOEzQadxF0pumAdjYqFObiHgmp4kU-ezn2lgc/edit?usp=sharing)).**
+**Also let me know which IDs are you planning to use, since duplicated IDs are not supported. Currently I have a spreadsheet to keep track of the progress on [Custom Personalities](SVS%20Custom%20Personalities.xlsx) ([Original on Google Docs](https://docs.google.com/spreadsheets/d/1jub1UsWOEzQadxF0pumAdjYqFObiHgmp4kU-ezn2lgc)).**
 
-**I have made a spreadsheet if you want to keep track on which file you have replaced [SVS Personality Voice](SVS%20Personality%20Voice%20Files%20Template.xlsx) ([Original on Google Docs](https://docs.google.com/spreadsheets/u/0/d/1oGlXUsWOMP7cZmuSpcUjsXz2JRtfHM1o4ZptGNp0dG4/edit)).**
+**I have made a spreadsheet if you want to keep track on which file you have replaced [SVS Personality Voice](SVS%20Personality%20Voice%20Files%20Template.xlsx) ([Original on Google Docs](https://docs.google.com/spreadsheets/u/0/d/1oGlXUsWOMP7cZmuSpcUjsXz2JRtfHM1o4ZptGNp0dG4)).**
 
 # Action Folder
 
